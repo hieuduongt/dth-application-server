@@ -1,0 +1,40 @@
+﻿@page "/all-categories"
+@inject HttpClient Http
+
+<PageTitle>Categories</PageTitle>
+
+<h1 class="mb-3">All Categories</h1>
+
+@if (categories == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Category Name</th>
+                <th>URL Path</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var category in categories.Results)
+            {
+                <tr>
+                    <td>@category.CategoryName</td>
+                    <td>@category.Url</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private GenericListResponse<Category>? categories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await Http.GetFromJsonAsync<GenericListResponse<Category>>("api/category/getall");
+    }
+}
