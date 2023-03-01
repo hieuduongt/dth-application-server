@@ -13,7 +13,7 @@ else if (Message != null && Message != "")
     <div class="row">
         <div class="col-auto mb-3">
             <div class="card" style="width: 30rem;">
-                <img src="@product.ImageURL" class="card-img-top" alt="@product.ProductName">
+                <img src="@product.ImageURLs.Find(i => i.IsMainImage == true)!.URL" class="card-img-top" alt="@product.ProductName">
                 <div class="card-body">
                     <h5 class="card-title">@product.ProductName</h5>
                     <h6 class="card-subtitle mb-2 text-muted">@product.Price đ</h6>
@@ -25,7 +25,7 @@ else if (Message != null && Message != "")
             <div class="mb-3 input-group">
                 <span class="input-group-text" for="formFile">Product Images</span>
                 <span class="input-group-text" id="ProductImages">Current URL</span>
-                <input value="@product.ImageURL" type="text" class="form-control" aria-label="ProductImages" aria-describedby="ProductImages">
+                <input value="@product.ImageURLs" type="text" class="form-control" aria-label="ProductImages" aria-describedby="ProductImages">
                 <input class="form-control" type="file" id="formFile">
             </div>
             <div class="input-group mb-3">

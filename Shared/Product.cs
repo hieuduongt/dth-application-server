@@ -9,12 +9,9 @@ namespace DTHApplication.Shared
     public class Product
     {
         public Guid Id { get; set; }
-
-
-
         public string ProductName { get; set; } = string.Empty;
         public double Price { get; set; }
-        public List<Image> ImageURL { get; set; } = new List<Image>();
+        public List<Image> ImageURLs { get; set; } = new List<Image>();
         public string Description { get; set; } = string.Empty;
         public Category? Category { get; set; }
         public Guid CategoryId { get; set; }

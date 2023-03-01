@@ -23,7 +23,7 @@
             {
                 <tr>
                     <td>
-                        <img src="@product.ImageURL" width="80" height="80" />
+                        <img src="@product.ImageURLs.Find(i => i.IsMainImage == true)!.URL" width="80" height="80" />
                     </td>
                     <td class="align-middle">@product.ProductName</td>
                     <td class="align-middle">@product.Price</td>

@@ -16,6 +16,7 @@ namespace DTHApplication.Server.Services.ProductServices
         public async Task<GenericResponse> createAsync(Product Product)
         {
             Product.Id = Guid.NewGuid();
+            Product.ImageURLs.ForEach(img => img.ProductId = Product.Id);
             var result = await _dbContext.Products.AddAsync(Product);
             return new GenericResponse() { Code = 200, IsSuccess= true, Message = "Created succesfully" };
         }
@@ -42,7 +43,7 @@ namespace DTHApplication.Server.Services.ProductServices
         public async Task<GenericResponse<Product>> getAsync(Guid Id)
         {
             var result = new GenericResponse<Product>();
-            var product = await _dbContext.Products.FindAsync(Id);
+            var product = await _dbContext.Products.Where(p => p.Id == Id).Include(p => p.ImageURLs).FirstAsync();
             if (product != null)
             {
                 Category? category = await _dbContext.Categories.FindAsync(product.CategoryId);
@@ -64,12 +65,16 @@ namespace DTHApplication.Server.Services.ProductServices
 
         public async Task<GenericListResponse<Product>> getAllAsync()
         {
-            List<Product> Products = await _dbContext.Products.ToListAsync();
-            foreach (var product in Products)
-            {
-                Category? category = await _dbContext.Categories.FindAsync(product.CategoryId);
-                product.Category = category;
-            }
+            List<Product> Products = await _dbContext.Products.Include(p => p.ImageURLs).Include(p => p.Category).Select(p => new Product
+                {
+                    Id = p.Id,
+                    ProductName = p.ProductName,
+                    Price = p.Price,
+                    ImageURLs = p.ImageURLs,
+                    Description = p.Description,
+                    Category = p.Category,
+                    CategoryId = p.CategoryId
+                }).ToListAsync();
             GenericListResponse<Product> results = new GenericListResponse<Product>(200, "Success", Products, true);
             return results;
         }

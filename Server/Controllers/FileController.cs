@@ -14,9 +14,17 @@ namespace DTHApplication.Server.Controllers
             _fileUpload = fileUpload;
         }
 
-        public IActionResult Image()
+        [HttpPost("upload")]
+        public async Task<IActionResult> Upload(IFormFile file)
         {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("Invalid file");
+            }
 
+            var filesUploaded = await _fileUpload.Upload(file);
+
+            return Ok(filesUploaded);
         }
     }
 }

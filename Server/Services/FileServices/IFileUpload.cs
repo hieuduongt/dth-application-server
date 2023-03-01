@@ -2,5 +2,6 @@
 {
     public interface IFileUpload
     {
+        public Task<GenericResponse<Image>> Upload(IFormFile file);
     }
 }

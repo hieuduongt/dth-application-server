@@ -8,7 +8,10 @@ namespace DTHApplication.Shared
 {
     public class Image
     {
-        public string MainImage { get; set; }
-        public string URL { get; set; }
+        public Guid Id { get; set; }
+        public bool IsMainImage { get; set; }
+        public string URL { get; set; } = string.Empty;
+        public Product? Product { get; set; }
+        public Guid ProductId { get; set; }
     }
 }
