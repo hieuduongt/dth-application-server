@@ -16,7 +16,12 @@ namespace DTHApplication.Server.Services.ProductServices
         public async Task<GenericResponse> createAsync(Product Product)
         {
             Product.Id = Guid.NewGuid();
-            Product.ImageURLs.ForEach(img => img.ProductId = Product.Id);
+            Product.ImageURLs.ForEach(img => {
+                img.ProductId = Product.Id;
+                if(img.Id != null) {
+                    img.Id = Guid.NewGuid();
+                }
+            });
             var result = await _dbContext.Products.AddAsync(Product);
             return new GenericResponse() { Code = 200, IsSuccess= true, Message = "Created succesfully" };
         }
