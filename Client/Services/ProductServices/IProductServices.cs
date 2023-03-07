@@ -8,6 +8,6 @@ namespace DTHApplication.Client.Services.ProductServices
         public Task getAllAsync();
         public Task createAsync(Product Product);
         public Task updateAsync(Product Product);
-        public Task deleteAsync(Guid Id);
+        public Task<GenericResponse> deleteAsync(Guid Id);
     }
 }

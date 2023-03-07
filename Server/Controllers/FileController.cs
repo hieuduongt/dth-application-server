@@ -8,10 +8,10 @@ namespace DTHApplication.Server.Controllers
     [ApiController]
     public class FileController : ControllerBase
     {
-        private readonly IFileUpload _fileUpload;
-        public FileController(IFileUpload fileUpload)
+        private readonly IFileServices _fileServies;
+        public FileController(IFileServices fileServies)
         {
-            _fileUpload = fileUpload;
+            _fileServies = fileServies;
         }
 
         [HttpPost("upload")]
@@ -22,9 +22,24 @@ namespace DTHApplication.Server.Controllers
                 return BadRequest("Invalid file");
             }
 
-            var filesUploaded = await _fileUpload.Upload(file);
+            var filesUploaded = await _fileServies.Upload(file);
 
             return Ok(filesUploaded);
+        }
+
+        [HttpPost("upload-many")]
+        public async Task<IActionResult> UploadMany(IFormFileCollection files)
+        {
+            if (files == null || files.Count == 0)
+            {
+                return BadRequest("Invalid file");
+            }
+            else
+            {
+                var filesUploaded = await _fileServies.UploadMany(files);
+
+                return Ok(filesUploaded);
+            }
         }
     }
 }

@@ -1,64 +1,88 @@
 ﻿using DTHApplication.Server.Services.CategoryServices;
+using DTHApplication.Server.Services.FileServices;
 using DTHApplication.Shared;
+using Microsoft.EntityFrameworkCore;
 
 namespace DTHApplication.Server.Services.ProductServices
 {
     public class ProductServices : IProductServices
     {
         private readonly DBContext _dbContext;
-        private readonly ICategoryServies _categoriesServies;
-        public ProductServices(DBContext dbContext, ICategoryServies categoriesServies)
+        private readonly IFileServices _fileServies;
+        public ProductServices(DBContext dbContext, IFileServices fileServies)
         {
             _dbContext = dbContext;
-            _categoriesServies = categoriesServies;
+            _fileServies = fileServies;
         }
 
         public async Task<GenericResponse> createAsync(Product Product)
         {
             Product.Id = Guid.NewGuid();
-            Product.ImageURLs.ForEach(img => {
-                img.ProductId = Product.Id;
-                if(img.Id != null) {
-                    img.Id = Guid.NewGuid();
-                }
-            });
+            if(Product.ImageURLs != null && Product.ImageURLs.Count != 0)
+            {
+                Product.ImageURLs[0]!.IsMainImage = true;
+                Product.ImageURLs.ForEach(img => {
+                    img.ProductId = Product.Id;
+                    if (img.Id == new Guid())
+                    {
+                        img.Id = Guid.NewGuid();
+                    }
+                });
+            }
+            
             var result = await _dbContext.Products.AddAsync(Product);
-            return new GenericResponse() { Code = 200, IsSuccess= true, Message = "Created succesfully" };
+            if (result != null && result.State.Equals(EntityState.Added))
+            {
+                await _dbContext.SaveChangesAsync();
+                return GenericResponse.Success("Created succesfully");
+            }
+            else
+            {
+                return GenericResponse.Failed("Create Failed");
+            }
         }
 
         public async Task<GenericResponse> deleteAsync(Guid Id)
         {
-            var result = new GenericResponse();
-            var product = await _dbContext.Products.FindAsync(Id);
+            var product = await _dbContext.Products.Include(p => p.ImageURLs).Where(p => p.Id == Id).FirstAsync();
             if(product != null)
             {
-                _dbContext.Products.Remove(product);
-                result.Message = "Deleted successfully";
-                result.Code = 201;
-                result.IsSuccess = true;
+                var result = _dbContext.Products.Remove(product);
+                if(result != null && result.State.Equals(EntityState.Deleted))
+                {
+                    var imagesDeletingResults = _fileServies.Delete(product.ImageURLs);
+                    if(imagesDeletingResults.IsSuccess == true)
+                    {
+                        await _dbContext.SaveChangesAsync();
+                        return GenericResponse.Success("Delete succesfully");
+                    }
+                    else
+                    {
+                        return GenericResponse.Failed("Delete Failed, your images are not exist!");
+                    }
+                } else
+                {
+                    return GenericResponse.Failed("Delete Failed");
+                }
             } else
             {
-                result.Message = "Your product does not exist!";
-                result.Code = 404;
-                result.IsSuccess = false;
+                return GenericResponse.Failed("Delete Failed, your product does not exist!");
             }
-            return result;
         }
 
         public async Task<GenericResponse<Product>> getAsync(Guid Id)
         {
             var result = new GenericResponse<Product>();
-            var product = await _dbContext.Products.Where(p => p.Id == Id).Include(p => p.ImageURLs).FirstAsync();
-            if (product != null)
+            Product product = new Product();
+            try
             {
-                Category? category = await _dbContext.Categories.FindAsync(product.CategoryId);
-                product.Category = category;
+                product = await _dbContext.Products.Where(p => p.Id == Id).Include(p => p.ImageURLs).Include(p => p.Category).FirstAsync();
                 result.Message = "Get successfully";
                 result.Code = 200;
                 result.IsSuccess = true;
                 result.Result = product;
             }
-            else
+            catch (Exception ex)
             {
                 result.Message = "Your product does not exist!";
                 result.Code = 404;
@@ -86,22 +110,16 @@ namespace DTHApplication.Server.Services.ProductServices
 
         public async Task<GenericResponse> updateAsync(Product Product)
         {
-            var result = new GenericResponse();
-            var product = await _dbContext.Products.FindAsync(Product.Id);
-            if (product != null)
+            var result = _dbContext.Products.Update(Product);
+            if (result != null && result.State.Equals(EntityState.Modified))
             {
-                _dbContext.Products.Update(product);
-                result.Message = "Updated successfully";
-                result.Code = 201;
-                result.IsSuccess = true;
+                await _dbContext.SaveChangesAsync();
+                return GenericResponse.Success("Updated product!");
             }
             else
             {
-                result.Message = "Your product does not exist!";
-                result.Code = 404;
-                result.IsSuccess = false;
+                return GenericResponse.Failed("Update failed!");
             }
-            return result;
         }
 
         public async Task<GenericListResponse<Product>> getByCategoryAsync(Guid Id)

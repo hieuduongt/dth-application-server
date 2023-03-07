@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 
 namespace DTHApplication.Client.Services.ProductServices
 {
@@ -16,10 +17,17 @@ namespace DTHApplication.Client.Services.ProductServices
         {
             throw new NotImplementedException();
         }
-        public Task deleteAsync(Guid Id)
+        public async Task<GenericResponse> deleteAsync(Guid Id)
 
         {
-            throw new NotImplementedException();
+            var response = await _http.DeleteAsync($"api/product/{Id}");
+            if(response != null && response.IsSuccessStatusCode)
+            {
+                return GenericResponse.Success("Deleted product");
+            } else
+            {
+                return GenericResponse.Failed("Cannot delete product");
+            }
         }
 
         public async Task getAllAsync()
@@ -39,7 +47,7 @@ namespace DTHApplication.Client.Services.ProductServices
                 return response;
             } else
             {
-                return new GenericResponse<Product>();
+                return response;
             }
         }
 

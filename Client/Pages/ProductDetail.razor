@@ -1,13 +1,14 @@
 ﻿@page "/product/get/{id:guid}"
 @inject IProductServices productServices
 
-@if (product == null)
+@if (product == null && !Notfound)
 {
     <div>Loading...</div>
 }
-else if (Message != null && Message != "")
+else if (Notfound && Message != null && Message != "")
 {
     <div>Error: @Message</div>
+    
 } else {
     <h3>Product detail</h3>
     <div class="row">
@@ -30,20 +31,19 @@ else if (Message != null && Message != "")
             </div>
             <div class="input-group mb-3">
                 <span class="input-group-text" id="ProductName">ProductName</span>
-                <input value="@product.ProductName" type="text" class="form-control" aria-label="Productname" aria-describedby="ProductName">
+                <input @bind="@product.ProductName" @oninput="@((e) => { product.ProductName=(string)e.Value!;})" type="text" class="form-control" aria-label="Productname" aria-describedby="ProductName">
             </div>
             <div class="input-group mb-3">
                 <span class="input-group-text" id="Price">Price</span>
-                <input value="@product.Price" type="number" class="form-control" aria-label="Price" aria-describedby="Price">
+                <input @bind="@product.Price" @oninput="@((e) => { product.Price=(int)e.Value!;})" type="number" class="form-control" aria-label="Price" aria-describedby="Price">
             </div>
             <div class="input-group mb-3">
                 <span class="input-group-text" id="Description">Description</span>
-                <textarea class="form-control" aria-label="Description" aria-describedby="Description" style="height: 100px">
-                    @product.Description
+                <textarea class="form-control" @bind="@product.Description" @oninput="@((e) => { product.Description=(string)e.Value!;})" aria-label="Description" aria-describedby="Description" style="height: 100px">
                 </textarea>
             </div>
-            <a href="#" class="btn btn-warning">Update</a>
-            <a href="#" class="btn btn-danger">Delete</a>
+            <button @onclick="@onUpdateProduct" class="btn btn-warning">Update</button>
+            <button @onclick="@onDeleteProduct" class="btn btn-danger">Delete</button>
         </div>
     </div> 
 }
@@ -51,6 +51,7 @@ else if (Message != null && Message != "")
 @code {
     private Product? product = null;
     private string Message { get; set; } = string.Empty;
+    private bool Notfound { get; set; } = false;
     [Parameter]
     public Guid Id { get; set; }
     protected override async Task OnInitializedAsync()
@@ -60,6 +61,26 @@ else if (Message != null && Message != "")
             product = result.Result;
         } else {
             Message = result.Message;
+            Notfound = true;
+        }
+    }
+
+    private async Task onUpdateProduct()
+    {
+        
+        
+    }
+
+    private async Task onDeleteProduct()
+    {
+        var res = await productServices.deleteAsync(Id);
+        if (res.IsSuccess)
+        {
+            Message = "Deleted";
+        }
+        else
+        {
+            Message = "Error";
         }
     }
 }

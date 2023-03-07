@@ -24,6 +24,13 @@ namespace DTHApplication.Server.Controllers
             return Ok(results);
         }
 
+        [HttpGet("getall-by-category")]
+        public async Task<ActionResult<GenericListResponse<Product>>> GetAllProductsByCategory(Guid Id)
+        {
+            GenericListResponse<Product> results = await _services.getByCategoryAsync(Id);
+            return Ok(results);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<GenericResponse<Product>>> GetProduct(Guid Id)
         {
