@@ -1,0 +1,21 @@
+.image-preview {
+    display: flex;
+    margin-bottom: 20px;
+    align-items: center;
+    height: 100%;
+}
+
+.image-preview > div {
+    width: 100px;
+    height: 100px;
+    margin-right: 3px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 3px;
+    display: flex;
+    align-items: center;
+}
+
+.image-preview > div > img {
+    width: 100%;
+}
