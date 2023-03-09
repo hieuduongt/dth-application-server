@@ -8,13 +8,16 @@
 else if (Notfound && Message != null && Message != "")
 {
     <div>Error: @Message</div>
-    
-} else {
+
+}
+else
+{
     <h3>Product detail</h3>
     <div class="row">
         <div class="col-auto mb-3">
             <div class="card" style="width: 30rem;">
-                <img src="@product.ImageURLs.Find(i => i.IsMainImage == true)!.URL" class="card-img-top" alt="@product.ProductName">
+                <img src="@product!.ImageURLs.Find(i => i.IsMainImage == true)!.URL" class="card-img-top"
+                    alt="@product.ProductName">
                 <div class="card-body">
                     <h5 class="card-title">@product.ProductName</h5>
                     <h6 class="card-subtitle mb-2 text-muted">@product.Price đ</h6>
@@ -23,29 +26,42 @@ else if (Notfound && Message != null && Message != "")
             </div>
         </div>
         <div class="col-auto">
-            <div class="mb-3 input-group">
-                <span class="input-group-text" for="formFile">Product Images</span>
-                <span class="input-group-text" id="ProductImages">Current URL</span>
-                <input value="@product.ImageURLs" type="text" class="form-control" aria-label="ProductImages" aria-describedby="ProductImages">
-                <input class="form-control" type="file" id="formFile">
+            <div class="row">
+                <div class="image-preview">
+                @foreach (var image in product.ImageURLs)
+                {
+                    <div>
+                        <img src="@image.URL"/>
+                    </div>
+                }
+                </div>
+                <div class="mb-3 input-group">
+                    <span class="input-group-text" for="formFile">Product Images</span>
+                    <input class="form-control" type="file" id="formFile" multiple>
+                </div>
             </div>
+
             <div class="input-group mb-3">
                 <span class="input-group-text" id="ProductName">ProductName</span>
-                <input @bind="@product.ProductName" @oninput="@((e) => { product.ProductName=(string)e.Value!;})" type="text" class="form-control" aria-label="Productname" aria-describedby="ProductName">
+                <input @bind="@product.ProductName" @oninput="@((e) => { product.ProductName=(string)e.Value!;})"
+                    type="text" class="form-control" aria-label="Productname" aria-describedby="ProductName">
             </div>
             <div class="input-group mb-3">
                 <span class="input-group-text" id="Price">Price</span>
-                <input @bind="@product.Price" @oninput="@((e) => { product.Price=(int)e.Value!;})" type="number" class="form-control" aria-label="Price" aria-describedby="Price">
+                <input @bind="@product.Price" @oninput="@((e) => { product.Price=(int)e.Value!;})" type="number"
+                    class="form-control" aria-label="Price" aria-describedby="Price">
             </div>
             <div class="input-group mb-3">
                 <span class="input-group-text" id="Description">Description</span>
-                <textarea class="form-control" @bind="@product.Description" @oninput="@((e) => { product.Description=(string)e.Value!;})" aria-label="Description" aria-describedby="Description" style="height: 100px">
-                </textarea>
+                <textarea class="form-control" @bind="@product.Description"
+                @oninput="@((e) => { product.Description=(string)e.Value!;})" aria-label="Description"
+                    aria-describedby="Description" style="height: 100px">
+                        </textarea>
             </div>
             <button @onclick="@onUpdateProduct" class="btn btn-warning">Update</button>
             <button @onclick="@onDeleteProduct" class="btn btn-danger">Delete</button>
         </div>
-    </div> 
+    </div>
 }
 
 @code {
@@ -57,9 +73,12 @@ else if (Notfound && Message != null && Message != "")
     protected override async Task OnInitializedAsync()
     {
         var result = await productServices.getAsync(Id);
-        if(result.Result != null) {
+        if (result.Result != null)
+        {
             product = result.Result;
-        } else {
+        }
+        else
+        {
             Message = result.Message;
             Notfound = true;
         }
@@ -67,8 +86,8 @@ else if (Notfound && Message != null && Message != "")
 
     private async Task onUpdateProduct()
     {
-        
-        
+
+
     }
 
     private async Task onDeleteProduct()
