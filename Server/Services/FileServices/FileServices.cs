@@ -104,8 +104,10 @@ namespace DTHApplication.Server.Services.FileServices
                     System.IO.File.Delete(exitingFile);
                 });
                 return GenericResponse.Success("Deleted all related images");
+            } else
+            {
+                return GenericResponse.Success("Deleted 0 images!!!");
             }
-            return GenericResponse.Failed("Cannot delete all related images!!!");
         }
     }
 }

@@ -18,10 +18,11 @@ namespace DTHApplication.Server.Services.ProductServices
         public async Task<GenericResponse> createAsync(Product Product)
         {
             Product.Id = Guid.NewGuid();
-            if(Product.ImageURLs != null && Product.ImageURLs.Count != 0)
+            if (Product.ImageURLs != null && Product.ImageURLs.Count != 0)
             {
                 Product.ImageURLs[0]!.IsMainImage = true;
-                Product.ImageURLs.ForEach(img => {
+                Product.ImageURLs.ForEach(img =>
+                {
                     img.ProductId = Product.Id;
                     if (img.Id == new Guid())
                     {
@@ -29,7 +30,7 @@ namespace DTHApplication.Server.Services.ProductServices
                     }
                 });
             }
-            
+
             var result = await _dbContext.Products.AddAsync(Product);
             if (result != null && result.State.Equals(EntityState.Added))
             {
@@ -45,13 +46,13 @@ namespace DTHApplication.Server.Services.ProductServices
         public async Task<GenericResponse> deleteAsync(Guid Id)
         {
             var product = await _dbContext.Products.Include(p => p.ImageURLs).Where(p => p.Id == Id).FirstAsync();
-            if(product != null)
+            if (product != null)
             {
                 var result = _dbContext.Products.Remove(product);
-                if(result != null && result.State.Equals(EntityState.Deleted))
+                if (result != null && result.State.Equals(EntityState.Deleted))
                 {
                     var imagesDeletingResults = _fileServies.Delete(product.ImageURLs);
-                    if(imagesDeletingResults.IsSuccess == true)
+                    if (imagesDeletingResults.IsSuccess == true)
                     {
                         await _dbContext.SaveChangesAsync();
                         return GenericResponse.Success("Delete succesfully");
@@ -60,11 +61,13 @@ namespace DTHApplication.Server.Services.ProductServices
                     {
                         return GenericResponse.Failed("Delete Failed, your images are not exist!");
                     }
-                } else
+                }
+                else
                 {
                     return GenericResponse.Failed("Delete Failed");
                 }
-            } else
+            }
+            else
             {
                 return GenericResponse.Failed("Delete Failed, your product does not exist!");
             }
@@ -95,31 +98,36 @@ namespace DTHApplication.Server.Services.ProductServices
         public async Task<GenericListResponse<Product>> getAllAsync()
         {
             List<Product> Products = await _dbContext.Products.Include(p => p.ImageURLs).Include(p => p.Category).Select(p => new Product
-                {
-                    Id = p.Id,
-                    ProductName = p.ProductName,
-                    Price = p.Price,
-                    ImageURLs = p.ImageURLs,
-                    Description = p.Description,
-                    Category = p.Category,
-                    CategoryId = p.CategoryId
-                }).ToListAsync();
+            {
+                Id = p.Id,
+                ProductName = p.ProductName,
+                Price = p.Price,
+                ImageURLs = p.ImageURLs,
+                Description = p.Description,
+                Category = p.Category,
+                CategoryId = p.CategoryId
+            }).ToListAsync();
             GenericListResponse<Product> results = new GenericListResponse<Product>(200, "Success", Products, true);
             return results;
         }
 
         public async Task<GenericResponse> updateAsync(Product Product)
         {
-            var result = _dbContext.Products.Update(Product);
-            if (result != null && result.State.Equals(EntityState.Modified))
+            var originalImages = await _dbContext.Images.Where(i => i.ProductId == Product.Id).ToListAsync();
+            var newImages = Product.ImageURLs;
+            var shouldBeDeletedImages = originalImages.FindAll(img => newImages.Find(ni => ni.Id == img.Id) == null);
+            _dbContext.Images.RemoveRange(originalImages);
+            _dbContext.Images.AddRange(newImages);
+            _dbContext.Products.Update(Product);
+            try
             {
                 await _dbContext.SaveChangesAsync();
+                _fileServies.Delete(shouldBeDeletedImages);
                 return GenericResponse.Success("Updated product!");
-            }
-            else
+            } catch (Exception ex)
             {
-                return GenericResponse.Failed("Update failed!");
-            }
+                return GenericResponse.Failed($"Update failed: " + ex.Message);
+            }   
         }
 
         public async Task<GenericListResponse<Product>> getByCategoryAsync(Guid Id)
