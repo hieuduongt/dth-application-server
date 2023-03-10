@@ -1,6 +1,8 @@
 ﻿using DTHApplication.Server.Services.CategoryServices;
 using DTHApplication.Server.Services.FileServices;
 using DTHApplication.Shared;
+using DTHApplication.Shared.Common;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace DTHApplication.Server.Services.ProductServices
@@ -76,10 +78,9 @@ namespace DTHApplication.Server.Services.ProductServices
         public async Task<GenericResponse<Product>> getAsync(Guid Id)
         {
             var result = new GenericResponse<Product>();
-            Product product = new Product();
             try
             {
-                product = await _dbContext.Products.Where(p => p.Id == Id).Include(p => p.ImageURLs).Include(p => p.Category).FirstAsync();
+                var product = await _dbContext.Products.Where(p => p.Id == Id).Include(p => p.ImageURLs).Include(p => p.Category).FirstAsync();
                 result.Message = "Get successfully";
                 result.Code = 200;
                 result.IsSuccess = true;
@@ -87,7 +88,7 @@ namespace DTHApplication.Server.Services.ProductServices
             }
             catch (Exception ex)
             {
-                result.Message = "Your product does not exist!";
+                result.Message = "Your product does not exist with error: " + ex.Message;
                 result.Code = 404;
                 result.IsSuccess = false;
                 result.Result = null;
@@ -97,18 +98,25 @@ namespace DTHApplication.Server.Services.ProductServices
 
         public async Task<GenericListResponse<Product>> getAllAsync()
         {
-            List<Product> Products = await _dbContext.Products.Include(p => p.ImageURLs).Include(p => p.Category).Select(p => new Product
+            try
             {
-                Id = p.Id,
-                ProductName = p.ProductName,
-                Price = p.Price,
-                ImageURLs = p.ImageURLs,
-                Description = p.Description,
-                Category = p.Category,
-                CategoryId = p.CategoryId
-            }).ToListAsync();
-            GenericListResponse<Product> results = new GenericListResponse<Product>(200, "Success", Products, true);
-            return results;
+                List<Product> Products = await _dbContext.Products.Include(p => p.ImageURLs).Include(p => p.Category).Select(p => new Product
+                {
+                    Id = p.Id,
+                    ProductName = p.ProductName,
+                    Price = p.Price,
+                    ImageURLs = p.ImageURLs,
+                    Description = p.Description,
+                    Category = p.Category,
+                    CategoryId = p.CategoryId
+                }).ToListAsync();
+                GenericListResponse<Product> results = new GenericListResponse<Product>(200, "Success", Products, true);
+                return results;
+            } catch (Exception ex)
+            {
+                return new GenericListResponse<Product>(500, "GetFailed " + ex.Message, null, false);;
+            }
+            
         }
 
         public async Task<GenericResponse> updateAsync(Product Product)
@@ -132,14 +140,36 @@ namespace DTHApplication.Server.Services.ProductServices
 
         public async Task<GenericListResponse<Product>> getByCategoryAsync(Guid Id)
         {
-            List<Product> products = await _dbContext.Products.Where(p => p.CategoryId == Id).ToListAsync();
-            return new GenericListResponse<Product>()
+            try
             {
-                Code = 200,
-                Message = "Get successfully",
-                IsSuccess = true,
-                Results = products
-            };
+                List<Product> products = await _dbContext.Products.Where(p => p.CategoryId == Id).Include(p => p.Category).Select(p => new Product
+                {
+                    Id = p.Id,
+                    ProductName = p.ProductName,
+                    Price = p.Price,
+                    ImageURLs = p.ImageURLs,
+                    Description = p.Description,
+                    Category = p.Category,
+                    CategoryId = p.CategoryId
+                }).ToListAsync();
+                return new GenericListResponse<Product>()
+                {
+                    Code = 200,
+                    Message = "Get successfully",
+                    IsSuccess = true,
+                    Results = products
+                };
+            } catch (Exception ex)
+            {
+                return new GenericListResponse<Product>()
+                {
+                    Code = 500,
+                    Message = "Get failed: " + ex.Message,
+                    IsSuccess = false,
+                    Results = null
+                };
+            }
+            
         }
     }
 }
