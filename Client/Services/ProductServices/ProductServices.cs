@@ -11,16 +11,16 @@ namespace DTHApplication.Client.Services.ProductServices
             _http = http;
         }
 
-        public List<Product> Products { get; set; } = new List<Product>();
+        public Pagination<Product> Products { get; set; } = new Pagination<Product>();
 
-        public Task createAsync(Product Product)
+        public Task CreateAsync(Product product)
         {
             throw new NotImplementedException();
         }
-        public async Task<GenericResponse> deleteAsync(Guid Id)
+        public async Task<GenericResponse> DeleteAsync(Guid id)
 
         {
-            var response = await _http.DeleteAsync($"api/product/{Id}");
+            var response = await _http.DeleteAsync($"api/product/{id}");
             if(response != null && response.IsSuccessStatusCode)
             {
                 return GenericResponse.Success("Deleted product");
@@ -30,16 +30,16 @@ namespace DTHApplication.Client.Services.ProductServices
             }
         }
 
-        public async Task getAllAsync()
+        public async Task GetAllAsync()
         {
-            var products = await _http.GetFromJsonAsync<GenericListResponse<Product>>("api/product/getall");
-            if (products != null && products.Results != null)
+            var products = await _http.GetFromJsonAsync<GenericResponse<Pagination<Product>>>("api/product/all");
+            if (products != null && products.IsSuccess)
             {
-                Products = products.Results;
+                Products = products.Result!;
             }
         }
 
-        public async Task<GenericResponse<Product>> getAsync(Guid Id)
+        public async Task<GenericResponse<Product>> GetAsync(Guid Id)
         {
             var response = await _http.GetFromJsonAsync<GenericResponse<Product>>($"api/product/{Id}");
             if(response != null && response.Result != null)
@@ -51,7 +51,7 @@ namespace DTHApplication.Client.Services.ProductServices
             }
         }
 
-        public Task updateAsync(Product Product)
+        public Task UpdateAsync(Product product)
         {
             throw new NotImplementedException();
         }

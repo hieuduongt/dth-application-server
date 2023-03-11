@@ -3,6 +3,7 @@ using DTHApplication.Server.Services.FileServices;
 using DTHApplication.Shared;
 using DTHApplication.Shared.Common;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch.Internal;
 using Microsoft.EntityFrameworkCore;
 
 namespace DTHApplication.Server.Services.ProductServices
@@ -17,159 +18,232 @@ namespace DTHApplication.Server.Services.ProductServices
             _fileServies = fileServies;
         }
 
-        public async Task<GenericResponse> createAsync(Product Product)
+        public async Task<GenericResponse> CreateAsync(Product product)
         {
-            Product.Id = Guid.NewGuid();
-            if (Product.ImageURLs != null && Product.ImageURLs.Count != 0)
+            product.Id = Guid.NewGuid();
+            if (product.ImageURLs != null && product.ImageURLs.Count != 0)
             {
-                Product.ImageURLs[0]!.IsMainImage = true;
-                Product.ImageURLs.ForEach(img =>
+                product.ImageURLs[0]!.IsMainImage = true;
+                product.ImageURLs.ForEach(img =>
                 {
-                    img.ProductId = Product.Id;
+                    img.ProductId = product.Id;
                     if (img.Id == new Guid())
                     {
                         img.Id = Guid.NewGuid();
                     }
                 });
             }
-
-            var result = await _dbContext.Products.AddAsync(Product);
-            if (result != null && result.State.Equals(EntityState.Added))
+            try
             {
+                await _dbContext.Products.AddAsync(product);
                 await _dbContext.SaveChangesAsync();
                 return GenericResponse.Success("Created succesfully");
             }
-            else
+            catch (Exception ex)
             {
-                return GenericResponse.Failed("Create Failed");
+
+                return GenericResponse.Failed("Create failed with error: " + ex.Message);
             }
         }
 
-        public async Task<GenericResponse> deleteAsync(Guid Id)
+        public async Task<GenericResponse> DeleteAsync(Guid id)
         {
-            var product = await _dbContext.Products.Include(p => p.ImageURLs).Where(p => p.Id == Id).FirstAsync();
-            if (product != null)
+            try
             {
-                var result = _dbContext.Products.Remove(product);
-                if (result != null && result.State.Equals(EntityState.Deleted))
+                var product = await _dbContext.Products.Include(p => p.ImageURLs).Where(p => p.Id == id).FirstAsync();
+                _dbContext.Products.Remove(product);
+                var imagesDeletingResults = _fileServies.Delete(product.ImageURLs);
+                if (imagesDeletingResults.IsSuccess == true)
                 {
-                    var imagesDeletingResults = _fileServies.Delete(product.ImageURLs);
-                    if (imagesDeletingResults.IsSuccess == true)
-                    {
-                        await _dbContext.SaveChangesAsync();
-                        return GenericResponse.Success("Delete succesfully");
-                    }
-                    else
-                    {
-                        return GenericResponse.Failed("Delete Failed, your images are not exist!");
-                    }
+                    await _dbContext.SaveChangesAsync();
+                    return GenericResponse.Success("Delete succesfully");
                 }
                 else
                 {
-                    return GenericResponse.Failed("Delete Failed");
+                    return GenericResponse.Failed("Delete Failed, your images are not exist!");
                 }
-            }
-            else
-            {
-                return GenericResponse.Failed("Delete Failed, your product does not exist!");
-            }
-        }
-
-        public async Task<GenericResponse<Product>> getAsync(Guid Id)
-        {
-            var result = new GenericResponse<Product>();
-            try
-            {
-                var product = await _dbContext.Products.Where(p => p.Id == Id).Include(p => p.ImageURLs).Include(p => p.Category).FirstAsync();
-                result.Message = "Get successfully";
-                result.Code = 200;
-                result.IsSuccess = true;
-                result.Result = product;
             }
             catch (Exception ex)
             {
-                result.Message = "Your product does not exist with error: " + ex.Message;
-                result.Code = 404;
-                result.IsSuccess = false;
-                result.Result = null;
+                return GenericResponse.Failed("Delete failed with error: " + ex.Message);
             }
-            return result;
         }
 
-        public async Task<GenericListResponse<Product>> getAllAsync()
+        public async Task<GenericResponse<Product>> GetAsync(Guid id)
         {
             try
             {
-                List<Product> Products = await _dbContext.Products.Include(p => p.ImageURLs).Include(p => p.Category).Select(p => new Product
+                var product = await _dbContext.Products.Where(p => p.Id == id).Include(p => p.ImageURLs).Include(p => p.Category).FirstAsync();
+                return new GenericResponse<Product>
                 {
-                    Id = p.Id,
-                    ProductName = p.ProductName,
-                    Price = p.Price,
-                    ImageURLs = p.ImageURLs,
-                    Description = p.Description,
-                    Category = p.Category,
-                    CategoryId = p.CategoryId
-                }).ToListAsync();
-                GenericListResponse<Product> results = new GenericListResponse<Product>(200, "Success", Products, true);
-                return results;
-            } catch (Exception ex)
-            {
-                return new GenericListResponse<Product>(500, "GetFailed " + ex.Message, null, false);;
+                    Message = "Get successfully",
+                    Code = 200,
+                    IsSuccess = true,
+                    Result = product
+                };
+
             }
-            
+            catch (Exception ex)
+            {
+                return new GenericResponse<Product>
+                {
+                    Message = "Your product does not exist with error: " + ex.Message,
+                    Code = 404,
+                    IsSuccess = false,
+                    Result = null
+                };
+            }
         }
 
-        public async Task<GenericResponse> updateAsync(Product Product)
+        public async Task<GenericResponse<Pagination<Product>>> GetAllAsync(string? search, int page, int pageSize)
         {
-            var originalImages = await _dbContext.Images.Where(i => i.ProductId == Product.Id).ToListAsync();
-            var newImages = Product.ImageURLs;
+            try
+            {
+                search ??= "";
+                List<Product> Products = await _dbContext.Products
+                    .Where(p => p.ProductName.Contains(search) || p.Description.Contains(search))
+                    .Include(p => p.ImageURLs)
+                    .Include(p => p.Category)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(p => new Product
+                    {
+                        Id = p.Id,
+                        ProductName = p.ProductName,
+                        Price = p.Price,
+                        ImageURLs = p.ImageURLs,
+                        Description = p.Description,
+                        Category = p.Category,
+                        CategoryId = p.CategoryId
+                    }).ToListAsync();
+
+                return new GenericResponse<Pagination<Product>>
+                {
+                    Code = 200,
+                    Message = "Get successfully",
+                    Result = new Pagination<Product>
+                    {
+                        CurrentPage = page,
+                        PageSize = pageSize,
+                        TotalPages = (await GetNumberOfProductsBySearchText(search) + pageSize - 1) / pageSize,
+                        TotalRecords= await GetNumberOfProductsBySearchText(search),
+                        Results = Products
+                    },
+                    IsSuccess = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GenericResponse<Pagination<Product>>
+                {
+                    Code = 500,
+                    Message = "Get failed with error: " + ex.Message,
+                    Result = null,
+                    IsSuccess = false
+                };
+            }
+
+        }
+
+        public async Task<GenericResponse> UpdateAsync(Product product)
+        {
+            var originalImages = await _dbContext.Images.Where(i => i.ProductId == product.Id).ToListAsync();
+            var newImages = product.ImageURLs;
             var shouldBeDeletedImages = originalImages.FindAll(img => newImages.Find(ni => ni.Id == img.Id) == null);
             _dbContext.Images.RemoveRange(originalImages);
             _dbContext.Images.AddRange(newImages);
-            _dbContext.Products.Update(Product);
+            _dbContext.Products.Update(product);
             try
             {
                 await _dbContext.SaveChangesAsync();
                 _fileServies.Delete(shouldBeDeletedImages);
                 return GenericResponse.Success("Updated product!");
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return GenericResponse.Failed($"Update failed: " + ex.Message);
-            }   
+            }
         }
 
-        public async Task<GenericListResponse<Product>> getByCategoryAsync(Guid Id)
+        public async Task<GenericResponse<Pagination<Product>>> GetByCategoryAsync(Guid categoryId, string? search, int page, int pageSize)
         {
             try
             {
-                List<Product> products = await _dbContext.Products.Where(p => p.CategoryId == Id).Include(p => p.Category).Select(p => new Product
-                {
-                    Id = p.Id,
-                    ProductName = p.ProductName,
-                    Price = p.Price,
-                    ImageURLs = p.ImageURLs,
-                    Description = p.Description,
-                    Category = p.Category,
-                    CategoryId = p.CategoryId
-                }).ToListAsync();
-                return new GenericListResponse<Product>()
+                search ??= "";
+                List<Product> products = await _dbContext.Products
+                    .Where(p => p.CategoryId == categoryId)
+                    .Where(p => p.ProductName.Contains(search) || p.Description.Contains(search))
+                    .Include(p => p.Category)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(p => new Product
+                    {
+                        Id = p.Id,
+                        ProductName = p.ProductName,
+                        Price = p.Price,
+                        ImageURLs = p.ImageURLs,
+                        Description = p.Description,
+                        Category = p.Category,
+                        CategoryId = p.CategoryId
+                    }).ToListAsync();
+                return new GenericResponse<Pagination<Product>>
                 {
                     Code = 200,
                     Message = "Get successfully",
-                    IsSuccess = true,
-                    Results = products
+                    Result = new Pagination<Product>
+                    {
+                        CurrentPage = page,
+                        PageSize = pageSize,
+                        TotalPages = (await GetNumberOfProductsByCategoryAndSearchText(categoryId, search) + pageSize - 1) / pageSize,
+                        TotalRecords = await GetNumberOfProductsByCategoryAndSearchText(categoryId, search),
+                        Results = products
+                    },
+                    IsSuccess = true
                 };
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                return new GenericListResponse<Product>()
+                return new GenericResponse<Pagination<Product>>()
                 {
                     Code = 500,
                     Message = "Get failed: " + ex.Message,
                     IsSuccess = false,
-                    Results = null
+                    Result = null
                 };
             }
-            
+
+        }
+
+        public async Task<int> GetNumberOfProductsBySearchText(string searchText)
+        {
+            try
+            {
+                return await _dbContext.Products
+                    .Where(p => p.ProductName.Contains(searchText) || p.Description.Contains(searchText))
+                    .Include(p => p.ImageURLs)
+                    .Include(p => p.Category)
+                    .CountAsync();
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
+        public async Task<int> GetNumberOfProductsByCategoryAndSearchText(Guid categoryId, string searchText)
+        {
+            try
+            {
+                return await _dbContext.Products
+                    .Where(p => p.CategoryId == categoryId)
+                    .Where(p => p.ProductName.Contains(searchText) || p.Description.Contains(searchText))
+                    .Include(p => p.Category)
+                    .CountAsync();
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
         }
     }
 }

@@ -4,11 +4,11 @@ namespace DTHApplication.Server.Services.ProductServices
 {
     public interface IProductServices
     {
-        public Task<GenericResponse<Product>> getAsync(Guid Id);
-        public Task<GenericListResponse<Product>> getByCategoryAsync(Guid Id);
-        public Task<GenericListResponse<Product>> getAllAsync();
-        public Task<GenericResponse> createAsync(Product Product);
-        public Task<GenericResponse> updateAsync(Product Product);
-        public Task<GenericResponse> deleteAsync(Guid Id);
+        public Task<GenericResponse<Product>> GetAsync(Guid id);
+        public Task<GenericResponse<Pagination<Product>>> GetByCategoryAsync(Guid categoryId, string? search, int page, int pageSize);
+        public Task<GenericResponse<Pagination<Product>>> GetAllAsync(string? search, int page, int pageSize);
+        public Task<GenericResponse> CreateAsync(Product product);
+        public Task<GenericResponse> UpdateAsync(Product product);
+        public Task<GenericResponse> DeleteAsync(Guid id);
     }
 }

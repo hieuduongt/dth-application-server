@@ -27,8 +27,8 @@ namespace DTHApplication.Server.Controllers
             return Ok(filesUploaded);
         }
 
-        [HttpPost("upload-many")]
-        public async Task<IActionResult> UploadMany(IFormFileCollection files)
+        [HttpPost("upload-multiple")]
+        public async Task<IActionResult> UploadMultiple(IFormFileCollection files)
         {
             if (files == null || files.Count == 0)
             {
@@ -36,7 +36,7 @@ namespace DTHApplication.Server.Controllers
             }
             else
             {
-                var filesUploaded = await _fileServies.UploadMany(files);
+                var filesUploaded = await _fileServies.Upload(files);
 
                 return Ok(filesUploaded);
             }

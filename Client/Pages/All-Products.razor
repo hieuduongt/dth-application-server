@@ -3,7 +3,7 @@
 <h3>Products List</h3>
 <button type="button" class="btn btn-success" @onclick="() => {IsCreating = true;}">Create new product</button>
 
-@if (productServices.Products == null || productServices.Products.Count == 0)
+@if (productServices.Products.Results == null || productServices.Products.Results.Count == 0)
 {
     <p><em>Loading...</em></p>
 } else if(!IsCreating) {
@@ -19,7 +19,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var product in productServices.Products)
+            @foreach (var product in productServices.Products.Results)
             {
                 <tr>
                     <td>
@@ -69,6 +69,6 @@
     private bool IsCreating { get; set; } = false;
     protected override async Task OnInitializedAsync()
     {
-        await productServices.getAllAsync();
+        await productServices.GetAllAsync();
     }
 }

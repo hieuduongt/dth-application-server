@@ -72,7 +72,7 @@ else
     public Guid Id { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        var result = await productServices.getAsync(Id);
+        var result = await productServices.GetAsync(Id);
         if (result.Result != null)
         {
             product = result.Result;
@@ -92,7 +92,7 @@ else
 
     private async Task onDeleteProduct()
     {
-        var res = await productServices.deleteAsync(Id);
+        var res = await productServices.DeleteAsync(Id);
         if (res.IsSuccess)
         {
             Message = "Deleted";

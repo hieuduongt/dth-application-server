@@ -49,7 +49,7 @@ namespace DTHApplication.Server.Services.FileServices
             };
         }
 
-        public async Task<GenericListResponse<Image>> UploadMany(IFormFileCollection files)
+        public async Task<GenericListResponse<Image>> Upload(IFormFileCollection files)
         {
             if(files != null && files.Count > 0)
             {

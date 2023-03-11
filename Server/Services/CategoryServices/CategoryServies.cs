@@ -9,87 +9,97 @@ namespace DTHApplication.Server.Services.CategoryServices
         {
             _dbContext = dbContext;
         }
-        public async Task<GenericResponse> createAsync(Category category)
+        public async Task<GenericResponse> CreateAsync(Category category)
         {
             category.Id = Guid.NewGuid();
-            var result = await _dbContext.Categories.AddAsync(category);
-            if(result != null && result.State.Equals(EntityState.Added))
+            try
             {
+                await _dbContext.Categories.AddAsync(category);
                 await _dbContext.SaveChangesAsync();
-                return GenericResponse.Success("Created succesfully"); ;
-                
-            } else
+                return GenericResponse.Success("Created succesfully");
+            }
+            catch (Exception ex)
             {
-                return GenericResponse.Success("Created Error"); ;
+                return GenericResponse.Success("Create failed with error: " + ex.Message);
             }
         }
 
-        public async Task<GenericResponse> deleteAsync(Guid Id)
+        public async Task<GenericResponse> DeleteAsync(Guid id)
         {
-            Category category = new Category() { Id = Id };
-            _dbContext.Categories.Attach(category);
-            var result = _dbContext.Categories.Remove(category);
-            if (result != null && result.State.Equals(EntityState.Deleted))
+            try
             {
+                Category? category = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == id);
+                _dbContext.Categories.Remove(category!);
                 await _dbContext.SaveChangesAsync();
-                return GenericResponse.Success("Deleted succesfully"); ;
-
+                return GenericResponse.Success("Deleted succesfully");
             }
-            else
+            catch (Exception ex)
             {
-                return GenericResponse.Success("Deleted Error"); ;
+                return GenericResponse.Success("Delete failed with error: " + ex.Message);
             }
         }
 
-        public async Task<GenericListResponse<Category>> getAllAsync()
+        public async Task<GenericListResponse<Category>> GetAllAsync()
         {
-            List<Category> categories = await _dbContext.Categories.ToListAsync();
-            if(categories.Count() != 0)
+            try
             {
-                return new GenericListResponse<Category>()
+                List<Category> categories = await _dbContext.Categories.ToListAsync();
+                return new GenericListResponse<Category>
                 {
                     Code = 200,
                     Message = "Get successfully",
                     IsSuccess = true,
                     Results = categories
                 };
-            } else
+            }
+            catch (Exception ex)
             {
                 return new GenericListResponse<Category>()
                 {
                     Code = 404,
-                    Message = "No categories found",
+                    Message = "No categories found with error: " + ex.Message,
                     IsSuccess = false,
                     Results = null
                 };
             }
         }
 
-        public async Task<GenericResponse<Category>> getAsync(Guid Id)
+        public async Task<GenericResponse<Category>> GetAsync(Guid id)
         {
-            Category? category = await _dbContext.Categories.FindAsync(Id);
-            return new GenericResponse<Category>()
+            try
             {
-                Code = 200,
-                IsSuccess = true,
-                Message = "Get successfully",
-                Result = category
-            };
+                Category? category = await _dbContext.Categories.FindAsync(id);
+                return new GenericResponse<Category>()
+                {
+                    Code = 200,
+                    IsSuccess = true,
+                    Message = "Get successfully",
+                    Result = category
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GenericResponse<Category>()
+                {
+                    Code = 404,
+                    IsSuccess = false,
+                    Message = "No category found with error: " + ex.Message,
+                    Result = null
+                };
+            }
+
         }
 
-        public async Task<GenericResponse> updateAsync(Category category)
+        public async Task<GenericResponse> UpdateAsync(Category category)
         {
-            _dbContext.Categories.Attach(category);
-            var result = _dbContext.Categories.Update(category);
-            if (result != null && result.State.Equals(EntityState.Modified))
+            try
             {
+                _dbContext.Categories.Update(category);
                 await _dbContext.SaveChangesAsync();
-                return GenericResponse.Success("Updated succesfully"); ;
-
-            }
-            else
+                return GenericResponse.Success("Updated succesfully");
+            } catch (Exception ex)
             {
-                return GenericResponse.Success("Updated Error"); ;
+                return GenericResponse.Failed("Update failed with error: " + ex.Message);
             }
         }
     }

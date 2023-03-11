@@ -2,10 +2,10 @@
 {
     public interface ICategoryServies
     {
-        public Task<GenericResponse<Category>> getAsync(Guid Id);
-        public Task<GenericListResponse<Category>> getAllAsync();
-        public Task<GenericResponse> createAsync(Category category);
-        public Task<GenericResponse> updateAsync(Category category);
-        public Task<GenericResponse> deleteAsync(Guid Id);
+        public Task<GenericResponse<Category>> GetAsync(Guid id);
+        public Task<GenericListResponse<Category>> GetAllAsync();
+        public Task<GenericResponse> CreateAsync(Category category);
+        public Task<GenericResponse> UpdateAsync(Category category);
+        public Task<GenericResponse> DeleteAsync(Guid id);
     }
 }
