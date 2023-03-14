@@ -54,8 +54,9 @@ namespace DTHApplication.Server.Services.FileServices
             if(files != null && files.Count > 0)
             {
                 List<Image> uploadedImages = new List<Image>();
-                foreach (var file in files)
+                for (int i = 0; i < files.Count; i++)
                 {
+                    var file = files[i];
                     if (file.Length > 0)
                     {
                         Guid imageId = Guid.NewGuid();
@@ -71,6 +72,7 @@ namespace DTHApplication.Server.Services.FileServices
                         {
                             Id = imageId,
                             URL = fullPath,
+                            IsMainImage = i == 0,
                         };
                         stream.Close();
                         uploadedImages.Add(image);

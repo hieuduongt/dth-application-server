@@ -23,7 +23,11 @@ namespace DTHApplication.Server.Services.ProductServices
             product.Id = Guid.NewGuid();
             if (product.ImageURLs != null && product.ImageURLs.Count != 0)
             {
-                product.ImageURLs[0]!.IsMainImage = true;
+                var mainImage = product.ImageURLs.Find(img => img.IsMainImage == true);
+                if(mainImage == null)
+                {
+                    product.ImageURLs[0]!.IsMainImage = true;
+                }
                 product.ImageURLs.ForEach(img =>
                 {
                     img.ProductId = product.Id;
@@ -100,7 +104,7 @@ namespace DTHApplication.Server.Services.ProductServices
             try
             {
                 search ??= "";
-                List<Product> Products = await _dbContext.Products
+                List<Product> products = await _dbContext.Products
                     .Where(p => p.ProductName.Contains(search) || p.Description.Contains(search))
                     .Include(p => p.ImageURLs)
                     .Include(p => p.Category)
@@ -116,7 +120,6 @@ namespace DTHApplication.Server.Services.ProductServices
                         Category = p.Category,
                         CategoryId = p.CategoryId
                     }).ToListAsync();
-
                 return new GenericResponse<Pagination<Product>>
                 {
                     Code = 200,
@@ -127,7 +130,7 @@ namespace DTHApplication.Server.Services.ProductServices
                         PageSize = pageSize,
                         TotalPages = (await GetNumberOfProductsBySearchText(search) + pageSize - 1) / pageSize,
                         TotalRecords= await GetNumberOfProductsBySearchText(search),
-                        Results = Products
+                        Results = products
                     },
                     IsSuccess = true
                 };
@@ -149,6 +152,11 @@ namespace DTHApplication.Server.Services.ProductServices
         {
             var originalImages = await _dbContext.Images.Where(i => i.ProductId == product.Id).ToListAsync();
             var newImages = product.ImageURLs;
+            var mainImage = newImages.Find(ni => ni.IsMainImage == true);
+            if(mainImage == null)
+            {
+                newImages[0].IsMainImage = true;
+            }
             var shouldBeDeletedImages = originalImages.FindAll(img => newImages.Find(ni => ni.Id == img.Id) == null);
             _dbContext.Images.RemoveRange(originalImages);
             _dbContext.Images.AddRange(newImages);

@@ -6,43 +6,50 @@
 @if (productServices.Products.Results == null || productServices.Products.Results.Count == 0)
 {
     <p><em>Loading...</em></p>
-} else if(!IsCreating) {
-    <table class="table table-striped mt-4">
-        <thead>
-            <tr>
-                <th scope="col">Image</th>
-                <th scope="col">Name</th>
-                <th scope="col">Price</th>
-                <th scope="col">Description</th>
-                <th scope="col">Category</th>
-                <th scope="col">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var product in productServices.Products.Results)
-            {
+}
+else if (!IsCreating)
+{
+    <div class="table-responsive">
+        <table class="table table-striped mt-4">
+            <thead>
                 <tr>
-                    <td>
-                        <img src="@product.ImageURLs.Find(i => i.IsMainImage == true)!.URL" width="80" height="80" />
-                    </td>
-                    <td class="align-middle">@product.ProductName</td>
-                    <td class="align-middle">@product.Price</td>
-                    <td class="align-middle">
-                        <div style="overflow: hidden; -webkit-line-clamp: 3; text-overflow: ellipsis; word-break: break-word; max-width: 600px; max-height: 80px; white-space: nowrap;">
-                            @product.Description
-                        </div>
-                    </td>
-                    <td class="align-middle">@product.Category.CategoryName</td>
-                    <td class="align-middle">
-                        <a class="btn btn-primary" href="product/get/@product.Id" role="button">Detail</a>
-                    </td>
+                    <th scope="col">Image</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Action</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var product in productServices.Products.Results)
+                {
+                    <tr>
+                        <td>
+                            <div class="product-image">
+                                <img src="@product.ImageURLs.Find(i => i.IsMainImage == true)!.URL" class="thumb-image" />
+                            </div>
+                        </td>
+                        <td class="align-middle">@product.ProductName</td>
+                        <td class="align-middle">@product.Price</td>
+                        <td class="align-middle">
+                            <div style="overflow: hidden; -webkit-line-clamp: 3; text-overflow: ellipsis; word-break: break-word; max-width: 600px; max-height: 80px; white-space: nowrap;">
+                                @product.Description
+                            </div>
+                        </td>
+                        <td class="align-middle">@product.Category.CategoryName</td>
+                        <td class="align-middle">
+                            <a class="btn btn-primary" href="product/get/@product.Id" role="button">Detail</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
-@if(IsCreating) {
+@if (IsCreating)
+{
     <div class="mb-3 mt-3">
         <label for="productnameinp" class="form-label">Product Name</label>
         <input type="text" class="form-control" id="productnameinp" placeholder="Type your product's name">
