@@ -42,7 +42,7 @@ namespace DTHApplication.Server.Controllers
             return Ok(results);
         }
 
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         public async Task<ActionResult<GenericResponse>> Delete(Guid id)
         {
             var results = await _servies.DeleteAsync(id);
