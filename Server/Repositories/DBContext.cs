@@ -18,7 +18,7 @@ namespace DTHApplication.Shared.Common
             modelBuilder.Entity<OrderProduct>().HasKey(op => new { op.ProductId, op.OrderId });
             modelBuilder.Entity<OrderProduct>().HasOne<Product>(op => op.Product).WithMany(p => p.OrderProduct).HasForeignKey(p => p.ProductId);
             modelBuilder.Entity<OrderProduct>().HasOne<Order>(op => op.Order).WithMany(o => o.OrderProduct).HasForeignKey(o => o.OrderId);
-        } 
+        }
 
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
