@@ -8,6 +8,7 @@ using DTHApplication.Server.Services.Validations;
 using Microsoft.Extensions.Options;
 using DTHApplication.Server.Services.FileServices;
 using Microsoft.Extensions.FileProviders;
+using DTHApplication.Server.Services.OrderServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,7 @@ builder.Services.AddScoped<IFileServices, FileServices>();
 builder.Services.AddScoped<IValidations, Validations>();
 builder.Services.AddScoped<ICategoryServies, CategoryServies>();
 builder.Services.AddScoped<IProductServices, ProductServices>();
+builder.Services.AddScoped<IOrderServices, OrderServices>();
 var app = builder.Build();
 
 app.UseSwaggerUI();

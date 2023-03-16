@@ -151,10 +151,10 @@ namespace DTHApplication.Server.Services.ProductServices
         public async Task<GenericResponse> UpdateAsync(Product product)
         {
             var originalImages = await _dbContext.Images.Where(i => i.ProductId == product.Id).ToListAsync();
-            var newImages = product.ImageURLs;
-            var mainImage = newImages.Find(ni => ni.IsMainImage == true);
-            if(mainImage == null)
+            var newImages = product.ImageURLs != null ? product.ImageURLs : new List<Image>();
+            if(newImages.Count != 0 && newImages[0].IsMainImage != true)
             {
+                newImages.ForEach(ni => ni.IsMainImage = false);
                 newImages[0].IsMainImage = true;
             }
             var shouldBeDeletedImages = originalImages.FindAll(img => newImages.Find(ni => ni.Id == img.Id) == null);
