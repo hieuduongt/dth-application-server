@@ -9,6 +9,8 @@ using Microsoft.Extensions.Options;
 using DTHApplication.Server.Services.FileServices;
 using Microsoft.Extensions.FileProviders;
 using DTHApplication.Server.Services.OrderServices;
+using DTHApplication.Server.Services.AuthServices;
+using DTHApplication.Server.Services.UserServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,11 +32,13 @@ builder.Services.AddRazorPages();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IFileServices, FileServices>();
+builder.Services.AddScoped<IImageServices, ImageServices>();
 builder.Services.AddScoped<IValidations, Validations>();
 builder.Services.AddScoped<ICategoryServies, CategoryServies>();
 builder.Services.AddScoped<IProductServices, ProductServices>();
 builder.Services.AddScoped<IOrderServices, OrderServices>();
+builder.Services.AddScoped<IAuthServices, AuthServices>();
+builder.Services.AddScoped<IUserServices, UserServices>();
 var app = builder.Build();
 
 app.UseSwaggerUI();

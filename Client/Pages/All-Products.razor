@@ -1,5 +1,5 @@
 ﻿@page "/all-products"
-@inject IProductServices productServices
+@inject IUserServices productServices
 <h3>Products List</h3>
 <button type="button" class="btn btn-success" @onclick="() => {IsCreating = true;}">Create new product</button>
 
@@ -27,7 +27,7 @@ else if (!IsCreating)
                     <tr>
                         <td>
                             <div class="product-image">
-                                <img src="@product.ImageURLs.Find(i => i.IsMainImage == true)!.URL" class="thumb-image" />
+                                <img src="@product.ImageURLs.Find(i => i.IsMainImage == true)?.URL" class="thumb-image" />
                             </div>
                         </td>
                         <td class="align-middle">@product.ProductName</td>
