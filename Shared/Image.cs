@@ -12,6 +12,8 @@ namespace DTHApplication.Shared
         public bool IsMainImage { get; set; }
         public string URL { get; set; } = string.Empty;
         public Product? Product { get; set; }
-        public Guid ProductId { get; set; }
+        public User? User { get; set; }
+        public Guid? ProductId { get; set; }
+        public Guid? UserId { get; set; }
     }
 }

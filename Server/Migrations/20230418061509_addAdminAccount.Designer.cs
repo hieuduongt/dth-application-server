@@ -4,6 +4,7 @@ using DTHApplication.Shared.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DTHApplication.Server.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20230418061509_addAdminAccount")]
+    partial class addAdminAccount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -206,16 +209,16 @@ namespace DTHApplication.Server.Migrations
                             Id = new Guid("5f735207-fb9d-4bf9-a2e4-c17f20d96da2"),
                             AccountStatus = 0,
                             Address = "Cầu Giấy, Hà Nội",
-                            CreatedDate = new DateTime(2023, 4, 18, 13, 48, 58, 611, DateTimeKind.Local).AddTicks(2238),
+                            CreatedDate = new DateTime(2023, 4, 18, 13, 15, 9, 812, DateTimeKind.Local).AddTicks(90),
                             DateOfBirth = new DateTime(1997, 1, 19, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "mydarhieu1997@gmail.com",
                             Gender = 0,
                             LoginName = "mydarhieu97",
-                            PasswordHash = new byte[] { 228, 10, 130, 96, 100, 213, 48, 124, 203, 224, 29, 164, 162, 213, 209, 94, 160, 114, 29, 57, 66, 204, 24, 146, 75, 76, 146, 9, 47, 58, 181, 144, 8, 172, 29, 46, 111, 101, 84, 80, 93, 216, 195, 248, 105, 157, 109, 215, 5, 157, 24, 133, 231, 70, 100, 199, 244, 21, 246, 102, 255, 102, 228, 132 },
-                            PasswordSalt = new byte[] { 195, 145, 178, 3, 8, 49, 255, 137, 189, 191, 193, 40, 89, 46, 58, 57, 241, 63, 114, 85, 21, 152, 240, 211, 116, 43, 21, 22, 251, 218, 150, 215, 247, 145, 153, 64, 71, 251, 134, 215, 153, 64, 103, 108, 175, 67, 200, 192, 7, 241, 114, 188, 43, 98, 167, 186, 14, 7, 186, 117, 234, 211, 93, 75, 254, 37, 226, 229, 7, 39, 133, 192, 140, 127, 54, 28, 85, 161, 234, 70, 169, 188, 61, 111, 209, 11, 26, 88, 28, 140, 202, 80, 217, 30, 168, 95, 135, 74, 74, 126, 254, 140, 171, 66, 161, 76, 202, 42, 43, 23, 16, 66, 81, 234, 78, 135, 31, 84, 164, 82, 185, 196, 96, 153, 229, 200, 178, 120 },
+                            PasswordHash = new byte[] { 48, 120, 68, 56, 50, 68, 70, 65, 67, 65, 53, 54, 69, 67, 69, 49, 50, 70, 66, 55, 48, 65, 55, 68, 65, 56, 49, 53, 53, 55, 66, 67, 68, 69, 57, 69, 67, 57, 70, 53, 57, 55, 50, 50, 70, 52, 49, 52, 67, 66, 56, 53, 69, 66, 70, 70, 52, 66, 67, 55, 56, 54, 70, 54, 49, 57, 69, 53, 48, 55, 57, 69, 53, 54, 57, 53, 69, 50, 70, 51, 56, 68, 51, 65, 67, 68, 69, 57, 56, 53, 50, 48, 70, 69, 54, 70, 56, 53, 69, 68, 57, 52, 55, 51, 52, 48, 53, 66, 57, 56, 57, 54, 48, 53, 48, 68, 57, 50, 52, 56, 52, 66, 56, 65, 50, 49, 50, 65, 57, 70 },
+                            PasswordSalt = new byte[] { 48, 120, 55, 48, 53, 65, 50, 57, 70, 49, 50, 57, 54, 55, 53, 49, 67, 55, 68, 53, 55, 52, 50, 53, 55, 55, 65, 50, 55, 51, 50, 55, 51, 68, 67, 48, 48, 69, 52, 69, 66, 54, 68, 67, 69, 54, 57, 51, 54, 68, 65, 50, 49, 68, 49, 52, 68, 51, 65, 69, 51, 67, 57, 54, 53, 49, 66, 54, 49, 51, 70, 57, 57, 57, 70, 70, 55, 66, 67, 50, 68, 51, 54, 49, 53, 49, 52, 49, 55, 67, 66, 57, 68, 66, 50, 68, 57, 56, 57, 54, 50, 57, 69, 53, 68, 52, 48, 65, 57, 53, 49, 66, 56, 65, 49, 56, 49, 56, 56, 53, 52, 52, 54, 51, 56, 69, 55, 54, 50, 56, 51, 67, 50, 70, 53, 67, 54, 68, 57, 55, 51, 54, 50, 48, 48, 66, 69, 67, 67, 57, 69, 67, 49, 70, 69, 49, 65, 68, 51, 51, 69, 53, 48, 68, 67, 67, 53, 50, 70, 65, 65, 54, 65, 65, 70, 68, 70, 50, 66, 54, 55, 50, 57, 50, 68, 66, 57, 48, 49, 52, 70, 54, 48, 51, 54, 65, 53, 56, 69, 66, 57, 54, 69, 52, 50, 69, 52, 70, 49, 52, 50, 52, 53, 65, 68, 65, 54, 52, 49, 51, 69, 69, 56, 67, 48, 55, 68, 54, 66, 50, 50, 48, 52, 53, 50, 48, 57, 69, 53, 57, 48, 69, 69, 56, 51, 57, 56, 69, 55, 52, 50, 48, 57, 49, 55, 56, 55, 65 },
                             PhoneNumber = "0396346126",
                             Role = 0,
-                            UpdatedDate = new DateTime(2023, 4, 18, 13, 48, 58, 611, DateTimeKind.Local).AddTicks(2352),
+                            UpdatedDate = new DateTime(2023, 4, 18, 13, 15, 9, 812, DateTimeKind.Local).AddTicks(232),
                             UserName = "Hieu Duong"
                         });
                 });

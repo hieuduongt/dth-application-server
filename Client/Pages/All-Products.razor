@@ -1,45 +1,52 @@
-﻿@page "/all-products"
-@inject IUserServices productServices
-<h3>Products List</h3>
-<button type="button" class="btn btn-success" @onclick="() => {IsCreating = true;}">Create new product</button>
+﻿@page "/all-users"
+@inject IUserServices userServices
+<h3>User List</h3>
 
-@if (productServices.Products.Results == null || productServices.Products.Results.Count == 0)
+@if (userServices.Users.Results == null || userServices.Users.Results.Count == 0)
 {
     <p><em>Loading...</em></p>
 }
-else if (!IsCreating)
+else
 {
     <div class="table-responsive">
         <table class="table table-striped mt-4">
             <thead>
                 <tr>
-                    <th scope="col">Image</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Price</th>
-                    <th scope="col">Description</th>
-                    <th scope="col">Category</th>
+                    <th scope="col">Avatar</th>
+                    <th scope="col">Login Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Gender</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Account Status</th>
+                    <th scope="col">Phone Number</th>
+                    <th scope="col">Address</th>
+                    <th scope="col">Date Of Birth</th>
+                    <th scope="col">Created Date</th>
+                    <th scope="col">Updated Date</th>
                     <th scope="col">Action</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var product in productServices.Products.Results)
+                @foreach (var user in userServices.Users.Results)
                 {
                     <tr>
                         <td>
                             <div class="product-image">
-                                <img src="@product.ImageURLs.Find(i => i.IsMainImage == true)?.URL" class="thumb-image" />
+                                <img src="@user.ProfileImages.Find(i => i.IsMainImage == true)?.URL" class="thumb-image" />
                             </div>
                         </td>
-                        <td class="align-middle">@product.ProductName</td>
-                        <td class="align-middle">@product.Price</td>
+                        <td class="align-middle">@user.LoginName</td>
+                        <td class="align-middle">@user.Email</td>
+                        <td class="align-middle">@user.Gender</td>
+                        <td class="align-middle">@user.Role</td>
+                        <td class="align-middle">@user.AccountStatus</td>
+                        <td class="align-middle">@user.PhoneNumber</td>
+                        <td class="align-middle">@user.Address</td>
+                        <td class="align-middle">@user.DateOfBirth</td>
+                        <td class="align-middle">@user.CreatedDate</td>
+                        <td class="align-middle">@user.UpdatedDate</td>
                         <td class="align-middle">
-                            <div style="overflow: hidden; -webkit-line-clamp: 3; text-overflow: ellipsis; word-break: break-word; max-width: 600px; max-height: 80px; white-space: nowrap;">
-                                @product.Description
-                            </div>
-                        </td>
-                        <td class="align-middle">@product.Category.CategoryName</td>
-                        <td class="align-middle">
-                            <a class="btn btn-primary" href="product/get/@product.Id" role="button">Detail</a>
+                            <a class="btn btn-primary" href="product/get/@user.Id" role="button">Detail</a>
                         </td>
                     </tr>
                 }
@@ -48,34 +55,9 @@ else if (!IsCreating)
     </div>
 }
 
-@if (IsCreating)
-{
-    <div class="mb-3 mt-3">
-        <label for="productnameinp" class="form-label">Product Name</label>
-        <input type="text" class="form-control" id="productnameinp" placeholder="Type your product's name">
-    </div>
-    <div class="mb-3">
-        <label for="productimage" class="form-label">Product Image</label>
-        <input type="text" class="form-control" id="productimage" placeholder="Type your product's image url">
-    </div>
-    <div class="mb-3">
-        <label for="productprice" class="form-label">Product Price</label>
-        <input type="number" class="form-control" id="productprice">
-    </div>
-    <div class="mb-3">
-        <label for="productdescription" class="form-label">Product Description</label>
-        <textarea class="form-control" id="productdescription" rows="3"></textarea>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-primary mb-3">Create</button>
-        <button type="submit" class="btn btn-danger mb-3" @onclick="() => {IsCreating = false;}">Cancel</button>
-    </div>
-}
-
 @code {
-    private bool IsCreating { get; set; } = false;
     protected override async Task OnInitializedAsync()
     {
-        await productServices.GetAllAsync();
+        await userServices.GetAllAsync();
     }
 }
