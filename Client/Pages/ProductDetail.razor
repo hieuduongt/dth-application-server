@@ -1,5 +1,5 @@
 ﻿@page "/product/get/{id:guid}"
-@inject IProductServices productServices
+@inject IUserServices productServices
 
 @if (product == null && !Notfound)
 {
@@ -16,7 +16,7 @@ else
     <div class="row">
         <div class="col-auto mb-3">
             <div class="card" style="width: 30rem;">
-                <img src="@product!.ImageURLs.Find(i => i.IsMainImage == true)!.URL" class="card-img-top"
+                <img src="@product!.ImageURLs.Find(i => i.IsMainImage == true)?.URL" class="card-img-top"
                     alt="@product.ProductName">
                 <div class="card-body">
                     <h5 class="card-title">@product.ProductName</h5>
@@ -25,26 +25,40 @@ else
                 </div>
             </div>
         </div>
-        <div class="col-auto">
+        <div class="col">
             <div class="row">
                 <div class="image-preview">
-                @foreach (var image in product.ImageURLs)
-                {
-                    <div>
-                        <img src="@image.URL"/>
-                    </div>
-                }
-                </div>
-                <label class="custom-file-upload">
-                    <input type="file" multiple/>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z" />
-                    </svg>
-                    <span>Upload(Max 5 images)</span>
-                </label>
-                <div class="mb-3 input-group">
-                    <span class="input-group-text" for="formFile">Product Images</span>
-                    <input class="form-control" type="file" id="formFile" multiple>
+                    @foreach (var image in product.ImageURLs)
+                    {
+                        <div class="image">
+                            <img src="@image.URL"/>
+                            <div class="image-action">
+                                <button class="image-button-action" title="Remove image">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 448 512"><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z" /></svg>
+                                </button>
+                                <button class="image-button-action" title="Preview image">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="white"  viewBox="0 0 576 512"><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM144 256a144 144 0 1 1 288 0 144 144 0 1 1 -288 0zm144-64c0 35.3-28.7 64-64 64c-7.1 0-13.9-1.2-20.3-3.3c-5.5-1.8-11.9 1.6-11.7 7.4c.3 6.9 1.3 13.8 3.2 20.7c13.7 51.2 66.4 81.6 117.6 67.9s81.6-66.4 67.9-117.6c-11.1-41.5-47.8-69.4-88.6-71.1c-5.8-.2-9.2 6.1-7.4 11.7c2.1 6.4 3.3 13.2 3.3 20.3z" /></svg>
+                                </button>
+                                @if (image.IsMainImage != true)
+                               {
+                                   <button class="image-button-action" title="Set image as main image">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 448 512"><path d="M64 80c-8.8 0-16 7.2-16 16V416c0 8.8 7.2 16 16 16H384c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16H64zM0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM337 209L209 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L303 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z" /></svg>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                        
+                    }
+                    @if (product.ImageURLs.Count < 5)
+                    {
+                    <label class="custom-file-upload">
+                            <InputFile hidden id="custom-file-upload" multiple max="@maxAllowedFiles" OnChange="@((InputFileChangeEventArgs e) => OnChangeFiles(e, product.ImageURLs))" accept="image/png, image/webp, image/jpeg, image/jpg" />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z" />
+                        </svg>
+                        <div>Upload(Max 5 images)</div>
+                    </label>
+                    }
                 </div>
             </div>
 
@@ -59,14 +73,19 @@ else
                     class="form-control" aria-label="Price" aria-describedby="Price">
             </div>
             <div class="input-group mb-3">
+                <span class="input-group-text" id="Price">Quantity</span>
+                <input @bind="@product.Quantity" @oninput="@((e) => { product.Quantity=(int)e.Value!;})" type="number"
+                   class="form-control" aria-label="Price" aria-describedby="Price">
+            </div>
+            <div class="input-group mb-3">
                 <span class="input-group-text" id="Description">Description</span>
                 <textarea class="form-control" @bind="@product.Description"
                 @oninput="@((e) => { product.Description=(string)e.Value!;})" aria-label="Description"
                     aria-describedby="Description" style="height: 100px">
                         </textarea>
             </div>
-            <button @onclick="@onUpdateProduct" class="btn btn-warning">Update</button>
-            <button @onclick="@onDeleteProduct" class="btn btn-danger">Delete</button>
+            <button @onclick="@OnUpdateProduct" class="btn btn-warning">Update</button>
+            <button @onclick="@OnDeleteProduct" class="btn btn-danger">Delete</button>
         </div>
     </div>
 }
@@ -75,6 +94,7 @@ else
     private Product? product = null;
     private string Message { get; set; } = string.Empty;
     private bool Notfound { get; set; } = false;
+    private int maxAllowedFiles = 5;
     [Parameter]
     public Guid Id { get; set; }
     protected override async Task OnInitializedAsync()
@@ -83,6 +103,7 @@ else
         if (result.Result != null)
         {
             product = result.Result;
+            maxAllowedFiles = 5 - product.ImageURLs.Count;
         }
         else
         {
@@ -91,13 +112,19 @@ else
         }
     }
 
-    private async Task onUpdateProduct()
+    private async Task OnUpdateProduct()
     {
 
 
     }
 
-    private async Task onDeleteProduct()
+    private void OnChangeFiles(InputFileChangeEventArgs e, List<Image> images)
+    {
+        var abc = e;
+        
+    }
+
+    private async Task OnDeleteProduct()
     {
         var res = await productServices.DeleteAsync(Id);
         if (res.IsSuccess)

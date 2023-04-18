@@ -23,4 +23,17 @@ namespace DTHApplication.Shared.Common
         User,
         Guest
     }
+
+    public enum Gender
+    {
+        Male,
+        FeMale
+    }
+
+    public enum AccountStatus
+    {
+        Active,
+        Inactive,
+        Banned
+    }
 }

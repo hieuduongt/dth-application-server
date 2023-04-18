@@ -6,12 +6,12 @@ namespace DTHApplication.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class FileController : ControllerBase
+    public class ImageController : ControllerBase
     {
-        private readonly IFileServices _fileServies;
-        public FileController(IFileServices fileServies)
+        private readonly IImageServices _imageServies;
+        public ImageController(IImageServices imageServies)
         {
-            _fileServies = fileServies;
+            _imageServies = imageServies;
         }
 
         [HttpPost("upload")]
@@ -22,7 +22,7 @@ namespace DTHApplication.Server.Controllers
                 return BadRequest("Invalid file");
             }
 
-            var filesUploaded = await _fileServies.Upload(file);
+            var filesUploaded = await _imageServies.Upload(file);
 
             return Ok(filesUploaded);
         }
@@ -36,7 +36,7 @@ namespace DTHApplication.Server.Controllers
             }
             else
             {
-                var filesUploaded = await _fileServies.Upload(files);
+                var filesUploaded = await _imageServies.UploadMany(files);
 
                 return Ok(filesUploaded);
             }

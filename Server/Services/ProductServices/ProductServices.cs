@@ -11,43 +11,50 @@ namespace DTHApplication.Server.Services.ProductServices
     public class ProductServices : IProductServices
     {
         private readonly DBContext _dbContext;
-        private readonly IFileServices _fileServies;
-        public ProductServices(DBContext dbContext, IFileServices fileServies)
+        private readonly IImageServices _imageServices;
+        public ProductServices(DBContext dbContext, IImageServices imageServices)
         {
             _dbContext = dbContext;
-            _fileServies = fileServies;
+            _imageServices = imageServices;
         }
 
         public async Task<GenericResponse> CreateAsync(Product product)
         {
-            product.Id = Guid.NewGuid();
-            if (product.ImageURLs != null && product.ImageURLs.Count != 0)
+            if(product != null)
             {
-                var mainImage = product.ImageURLs.Find(img => img.IsMainImage == true);
-                if(mainImage == null)
+                product.Id = Guid.NewGuid();
+                if (product.ImageURLs != null && product.ImageURLs.Count != 0)
                 {
-                    product.ImageURLs[0]!.IsMainImage = true;
-                }
-                product.ImageURLs.ForEach(img =>
-                {
-                    img.ProductId = product.Id;
-                    if (img.Id == new Guid())
+                    var mainImage = product.ImageURLs.Find(img => img.IsMainImage == true);
+                    if (mainImage == null)
                     {
-                        img.Id = Guid.NewGuid();
+                        product.ImageURLs[0]!.IsMainImage = true;
                     }
-                });
-            }
-            try
+                    product.ImageURLs.ForEach(img =>
+                    {
+                        img.ProductId = product.Id;
+                        if (img.Id == new Guid())
+                        {
+                            img.Id = Guid.NewGuid();
+                        }
+                    });
+                }
+                try
+                {
+                    await _dbContext.Products.AddAsync(product);
+                    await _dbContext.SaveChangesAsync();
+                    return GenericResponse.Success("Created succesfully");
+                }
+                catch (Exception ex)
+                {
+                    _imageServices.DeleteMany(product.ImageURLs!);
+                    return GenericResponse.Failed($"Create failed with error: {ex.Message}");
+                }
+            } else
             {
-                await _dbContext.Products.AddAsync(product);
-                await _dbContext.SaveChangesAsync();
-                return GenericResponse.Success("Created succesfully");
+                return GenericResponse.Failed("Create failed with error: your product should not be nulled");
             }
-            catch (Exception ex)
-            {
-
-                return GenericResponse.Failed("Create failed with error: " + ex.Message);
-            }
+            
         }
 
         public async Task<GenericResponse> DeleteAsync(Guid id)
@@ -56,7 +63,7 @@ namespace DTHApplication.Server.Services.ProductServices
             {
                 var product = await _dbContext.Products.Include(p => p.ImageURLs).Where(p => p.Id == id).FirstAsync();
                 _dbContext.Products.Remove(product);
-                var imagesDeletingResults = _fileServies.Delete(product.ImageURLs);
+                var imagesDeletingResults = _imageServices.DeleteMany(product.ImageURLs);
                 if (imagesDeletingResults.IsSuccess == true)
                 {
                     await _dbContext.SaveChangesAsync();
@@ -69,7 +76,7 @@ namespace DTHApplication.Server.Services.ProductServices
             }
             catch (Exception ex)
             {
-                return GenericResponse.Failed("Delete failed with error: " + ex.Message);
+                return GenericResponse.Failed($"Delete failed with error: {ex.Message}");
             }
         }
 
@@ -91,7 +98,7 @@ namespace DTHApplication.Server.Services.ProductServices
             {
                 return new GenericResponse<Product>
                 {
-                    Message = "Your product does not exist with error: " + ex.Message,
+                    Message = $"Your product does not exist with error: {ex.Message}",
                     Code = 404,
                     IsSuccess = false,
                     Result = null
@@ -115,6 +122,7 @@ namespace DTHApplication.Server.Services.ProductServices
                         Id = p.Id,
                         ProductName = p.ProductName,
                         Price = p.Price,
+                        Quantity = p.Quantity,
                         ImageURLs = p.ImageURLs,
                         Description = p.Description,
                         Category = p.Category,
@@ -140,7 +148,7 @@ namespace DTHApplication.Server.Services.ProductServices
                 return new GenericResponse<Pagination<Product>>
                 {
                     Code = 500,
-                    Message = "Get failed with error: " + ex.Message,
+                    Message = $"Get failed with error: {ex.Message}",
                     Result = null,
                     IsSuccess = false
                 };
@@ -150,26 +158,33 @@ namespace DTHApplication.Server.Services.ProductServices
 
         public async Task<GenericResponse> UpdateAsync(Product product)
         {
-            var originalImages = await _dbContext.Images.Where(i => i.ProductId == product.Id).ToListAsync();
-            var newImages = product.ImageURLs != null ? product.ImageURLs : new List<Image>();
-            if(newImages.Count != 0 && newImages[0].IsMainImage != true)
+            if(product != null)
             {
-                newImages.ForEach(ni => ni.IsMainImage = false);
-                newImages[0].IsMainImage = true;
-            }
-            var shouldBeDeletedImages = originalImages.FindAll(img => newImages.Find(ni => ni.Id == img.Id) == null);
-            _dbContext.Images.RemoveRange(originalImages);
-            _dbContext.Images.AddRange(newImages);
-            _dbContext.Products.Update(product);
-            try
+                var originalImages = await _dbContext.Images.Where(i => i.ProductId == product.Id).ToListAsync();
+                var newImages = product.ImageURLs != null ? product.ImageURLs : new List<Image>();
+                if (newImages.Count != 0 && newImages[0].IsMainImage != true)
+                {
+                    newImages.ForEach(ni => ni.IsMainImage = false);
+                    newImages[0].IsMainImage = true;
+                }
+                var shouldBeDeletedImages = originalImages.FindAll(img => newImages.Find(ni => ni.Id == img.Id) == null);
+                _dbContext.Images.RemoveRange(originalImages);
+                _dbContext.Images.AddRange(newImages);
+                _dbContext.Products.Update(product);
+                try
+                {
+                    await _dbContext.SaveChangesAsync();
+                    _imageServices.DeleteMany(shouldBeDeletedImages);
+                    return GenericResponse.Success("Updated product!");
+                }
+                catch (Exception ex)
+                {
+                    _imageServices.DeleteMany(newImages);
+                    return GenericResponse.Failed($"Update failed: {ex.Message}");
+                }
+            } else
             {
-                await _dbContext.SaveChangesAsync();
-                _fileServies.Delete(shouldBeDeletedImages);
-                return GenericResponse.Success("Updated product!");
-            }
-            catch (Exception ex)
-            {
-                return GenericResponse.Failed($"Update failed: " + ex.Message);
+                return GenericResponse.Failed("Update failed: your product should not be nulled");
             }
         }
 
@@ -189,6 +204,7 @@ namespace DTHApplication.Server.Services.ProductServices
                         Id = p.Id,
                         ProductName = p.ProductName,
                         Price = p.Price,
+                        Quantity = p.Quantity,
                         ImageURLs = p.ImageURLs,
                         Description = p.Description,
                         Category = p.Category,
@@ -214,7 +230,7 @@ namespace DTHApplication.Server.Services.ProductServices
                 return new GenericResponse<Pagination<Product>>()
                 {
                     Code = 500,
-                    Message = "Get failed: " + ex.Message,
+                    Message = $"Get failed: {ex.Message}",
                     IsSuccess = false,
                     Result = null
                 };

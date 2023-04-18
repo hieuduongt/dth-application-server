@@ -14,7 +14,7 @@ namespace DTHApplication.Server.Controllers
             _orderServices = orderServices;
         }
 
-        [HttpGet("get-all")]
+        [HttpGet("all")]
         public async Task<ActionResult<GenericResponse<Pagination<Order>>>> GetAll(string? search, int page = 1, int pageSize = 24)
         {
             var results = await _orderServices.GetAllAsync(search, page, pageSize);

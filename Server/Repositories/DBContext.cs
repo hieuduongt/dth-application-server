@@ -26,5 +26,6 @@ namespace DTHApplication.Shared.Common
         public DbSet<Image> Images { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderProduct> OrderProducts { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }
