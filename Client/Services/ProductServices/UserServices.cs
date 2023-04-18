@@ -11,11 +11,14 @@ namespace DTHApplication.Client.Services.ProductServices
             _http = http;
         }
 
-        public Pagination<User> Users { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public Pagination<User> Users { get; set; } = new Pagination<User>();
 
-        public Task GetAllAsync()
+        public async Task GetAllAsync()
         {
-            throw new NotImplementedException();
+            var users = await _http.GetFromJsonAsync<GenericResponse<Pagination<User>>>("api/user/all");
+            if(users != null && users.IsSuccess && users.Result != null) {
+                Users = users.Result;
+            }
         }
 
         public Task<GenericResponse<User>> GetAsync(Guid id)
