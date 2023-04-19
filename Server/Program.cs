@@ -1,16 +1,16 @@
+global using DTHApplication.Server.Services.ProductServices;
 global using DTHApplication.Shared;
 global using DTHApplication.Shared.Common;
 global using Microsoft.EntityFrameworkCore;
-global using DTHApplication.Server.Services.ProductServices;
-using Microsoft.AspNetCore.ResponseCompression;
-using DTHApplication.Server.Services.CategoryServices;
-using DTHApplication.Server.Services.Validations;
-using Microsoft.Extensions.Options;
-using DTHApplication.Server.Services.FileServices;
-using Microsoft.Extensions.FileProviders;
-using DTHApplication.Server.Services.OrderServices;
 using DTHApplication.Server.Services.AuthServices;
+using DTHApplication.Server.Services.CategoryServices;
+using DTHApplication.Server.Services.FileServices;
+using DTHApplication.Server.Services.OrderServices;
 using DTHApplication.Server.Services.UserServices;
+using DTHApplication.Server.Services.Validations;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,8 +18,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<DbContext, DBContext>();
 builder.Services.AddDbContext<DBContext>(options =>
 {
-    // options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-    options.UseSqlServer(builder.Configuration.GetConnectionString("PrivateConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    // options.UseSqlServer(builder.Configuration.GetConnectionString("PrivateConnection"));
 });
 
 builder.Services.AddControllersWithViews()
@@ -39,6 +39,18 @@ builder.Services.AddScoped<IProductServices, ProductServices>();
 builder.Services.AddScoped<IOrderServices, OrderServices>();
 builder.Services.AddScoped<IAuthServices, AuthServices>();
 builder.Services.AddScoped<IUserServices, UserServices>();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value)),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
+
 var app = builder.Build();
 
 app.UseSwaggerUI();
@@ -55,6 +67,8 @@ else
     app.UseHsts();
 }
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseCors(options => options.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin());
 app.UseSwagger();

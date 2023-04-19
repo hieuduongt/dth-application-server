@@ -1,0 +1,8 @@
+﻿.show-menu {
+    display: block;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    min-width: 30px;
+    max-width: 300px;
+}

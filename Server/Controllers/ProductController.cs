@@ -1,14 +1,11 @@
-﻿using DTHApplication.Server.Services;
-using DTHApplication.Shared;
-using DTHApplication.Shared.Common;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace DTHApplication.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductController : ControllerBase
     {
         private readonly IProductServices _services;
@@ -18,7 +15,7 @@ namespace DTHApplication.Server.Controllers
         }
 
         [HttpGet("all")]
-        public async Task<ActionResult<GenericResponse<Pagination<Product>>>> GetAll(string? search, int page = 1, int pageSize = 24) 
+        public async Task<ActionResult<GenericResponse<Pagination<Product>>>> GetAll(string? search, int page = 1, int pageSize = 24)
         {
             GenericResponse<Pagination<Product>> results = await _services.GetAllAsync(search, page, pageSize);
             return Ok(results);

@@ -20,7 +20,7 @@ namespace DTHApplication.Server
                 AccountStatus = AccountStatus.Active,
                 Address = "Cầu Giấy, Hà Nội",
                 CreatedDate = DateTime.Now,
-                DateOfBirth = DateTime.Parse("1/19/1997"),
+                DateOfBirth = DateTime.Parse("1997-01-19"),
                 Gender = Gender.Male,
                 PhoneNumber = "0396346126",
                 Role = Role.Admin,

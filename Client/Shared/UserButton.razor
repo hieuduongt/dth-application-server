@@ -1,0 +1,38 @@
+﻿@using System.Security.Claims
+@inject ILocalStorageServices LocalStorage
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+<AuthorizeView>
+    <Authorized>
+        <div class="dropdown me-1">
+            <button type="button" aria-expanded="false" @onclick="ToggleUserMenu" @onfocusout="HideUserMenu" class="btn btn-secondary dropdown-toggle user-button">
+                <i class="oi oi-person"><span style="margin:0 10px">@context.User.Claims.Where(u => u.Type == ClaimTypes.GivenName).FirstOrDefault().Value</span></i>
+            </button>
+            <ul class="dropdown-menu @UserMenuCssClass">
+                <li>
+                    <button @onclick="Logout" class="dropdown-item">Logout</button>
+                </li>
+            </ul>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private bool showUserMenu = false;
+    private string UserMenuCssClass => showUserMenu ? "show-menu" : null;
+
+    private void ToggleUserMenu() {
+        showUserMenu = !showUserMenu;
+    }
+
+    private async Task HideUserMenu() {
+        await Task.Delay(300);
+        showUserMenu = false;
+    }
+
+    private async Task Logout() {
+        await LocalStorage.RemoveItem("authToken");
+        await AuthenticationStateProvider.GetAuthenticationStateAsync();
+    }
+}

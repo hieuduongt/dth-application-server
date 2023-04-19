@@ -1,0 +1,68 @@
+﻿@page "/login"
+@using Microsoft.AspNetCore.WebUtilities
+@inject IAuthServices authService
+@inject NavigationManager NavigationManager
+@inject ILocalStorageServices LocalStorage
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Login</PageTitle>
+
+<div class="login-container">
+    <div class="col">
+        <div class="login-background">
+            <div class="login-text-content">
+                <img src="/login-background.jpg" />
+                <div class="text-content">
+                    WELCOME TO DTH SYSTEM
+                </div>
+                <div class="text-content">
+                    Let us bring you the best experiences!
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col" style="text-align: center; font-weight: bold;">
+        <div class="login-form">
+            <div class="center-form">
+                <h1 style="font-weight: bolder">Login</h1>
+                <EditForm Model="user" OnValidSubmit="HandleLogin">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label class="col-form-label" for="email">Email/User Name</label>
+                        <div class="">
+                            <InputText id="email" @bind-Value="user.UserName" class="form-control" />
+                            <ValidationMessage For="@(() => user.UserName)" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="col-form-label" for="password">Password</label>
+                        <div class="">
+                            <InputText id="password" @bind-Value="user.Password" class="form-control" type="password" />
+                            <ValidationMessage For="@(() => user.Password)" />
+                        </div>
+                    </div>
+                    <div class="mb-3 text-danger">
+                        <span>@ErrorMessage</span>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%">Login</button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string ErrorMessage { get; set; } = string.Empty;
+    private UserLogin user = new UserLogin();
+
+    private async Task HandleLogin() {
+        var results = await authService.LoginAsync(user);
+        if (results.IsSuccess) {
+            ErrorMessage = string.Empty;
+            await LocalStorage.SetItem("authToken", results.Result);
+            await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        } else {
+            ErrorMessage = results.Message;
+        }
+    }
+}
