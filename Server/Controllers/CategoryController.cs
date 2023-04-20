@@ -1,12 +1,11 @@
 ﻿using DTHApplication.Server.Services.CategoryServices;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DTHApplication.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    // [Authorize]
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryServies _servies;

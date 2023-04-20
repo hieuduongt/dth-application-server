@@ -11,7 +11,6 @@ using DTHApplication.Server.Services.Validations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,8 +19,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<DbContext, DBContext>();
 builder.Services.AddDbContext<DBContext>(options =>
 {
-    // options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-    options.UseSqlServer(builder.Configuration.GetConnectionString("PrivateConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    // options.UseSqlServer(builder.Configuration.GetConnectionString("PrivateConnection"));
 });
 
 builder.Services.AddControllersWithViews()
@@ -105,11 +104,14 @@ builder.Services.AddAuthentication(x =>
         };
     });
 
-builder.Services.AddAuthorization(options => {
-    options.AddPolicy("AdminPolicy", (policy) => {
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminPolicy", (policy) =>
+    {
         policy.RequireRole(Role.Admin.ToString());
     });
-    options.AddPolicy("ManagerPolicy", (policy) => {
+    options.AddPolicy("ManagerPolicy", (policy) =>
+    {
         policy.RequireRole(Role.Manager.ToString());
     });
 });
@@ -142,13 +144,13 @@ app.UseBlazorFrameworkFiles();
 
 app.UseStaticFiles();
 
-// app.UseStaticFiles(new StaticFileOptions
-// {
-//     FileProvider = new PhysicalFileProvider(
-//         Path.Combine(Directory.GetCurrentDirectory(), builder.Configuration["Files:Uploads"])
-//         ),
-//     RequestPath = "/" + builder.Configuration["Files:Uploads"]
-// });
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), builder.Configuration["Files:Uploads"])
+        ),
+    RequestPath = "/" + builder.Configuration["Files:Uploads"]
+});
 
 
 app.MapRazorPages();

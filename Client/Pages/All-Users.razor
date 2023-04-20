@@ -1,6 +1,6 @@
 ﻿@page "/all-users"
 @inject IUserServices userServices
-<h3>User List</h3>
+<h3>List Users</h3>
 
 @if (Loading)
 {
@@ -17,8 +17,8 @@ else if(userServices.ResponseMessage == "" && (userServices.Users.Results != nul
                     <th scope="col">Login Name</th>
                     <th scope="col">Email</th>
                     <th scope="col">Gender</th>
-                    <th scope="col">Role</th>
                     <th scope="col">Account Status</th>
+                    <th scope="col">Role</th>
                     <th scope="col">Phone Number</th>
                     <th scope="col">Address</th>
                     <th scope="col">Date Of Birth</th>
@@ -42,19 +42,17 @@ else if(userServices.ResponseMessage == "" && (userServices.Users.Results != nul
                         <td class="align-middle">@user.Gender</td>
                         <td class="align-middle">
                             <select @bind="@user.Role" class="form-select" aria-label="Default select example">
-                                <option selected value="@user.Role">@user.Role</option>
                                 @foreach (Role role in (Role[]) Enum.GetValues(typeof(Role)))
                                 {
-                                    <option value="@role">@role</option>
+                                    <option selected="@(@user.Role == role)" value="@role">@role</option>
                                 }
                             </select>
                         </td>
                         <td class="align-middle">
                             <select @bind="@user.AccountStatus" class="form-select" aria-label="Default select example">
-                                <option selected value="@user.AccountStatus">@user.AccountStatus</option>
                                 @foreach (AccountStatus status in (AccountStatus[]) Enum.GetValues(typeof(AccountStatus)))
                                 {
-                                    <option value="@status">@status</option>
+                                    <option selected="@(@user.AccountStatus == status)" value="@status">@status</option>
                                 }
                             </select>
                         </td>

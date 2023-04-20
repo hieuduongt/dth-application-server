@@ -1,12 +1,11 @@
 ﻿using DTHApplication.Server.Services.FileServices;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DTHApplication.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    // [Authorize]
     public class ImageController : ControllerBase
     {
         private readonly IImageServices _imageServies;
