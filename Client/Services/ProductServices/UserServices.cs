@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace DTHApplication.Client.Services.ProductServices
 {
@@ -12,13 +13,21 @@ namespace DTHApplication.Client.Services.ProductServices
         }
 
         public Pagination<User> Users { get; set; } = new Pagination<User>();
+        public string ResponseMessage { get; set; } = string.Empty;
 
         public async Task GetAllAsync()
         {
-            var users = await _http.GetFromJsonAsync<GenericResponse<Pagination<User>>>("api/user/all");
-            if(users != null && users.IsSuccess && users.Result != null) {
+            var response = await _http.GetAsync("api/user/all");
+            Console.WriteLine(response);
+            if(response.StatusCode.Equals(HttpStatusCode.Forbidden)) {
+                ResponseMessage = "You does not have permission to access this resource";
+            } else {
+                var content = await response.Content.ReadAsStringAsync();
+                var users = JsonSerializer.Deserialize<GenericResponse<Pagination<User>>>(content,
+                            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                ResponseMessage = string.Empty;
                 Users = users.Result;
-            }
+            }       
         }
 
         public Task<GenericResponse<User>> GetAsync(Guid id)
@@ -26,9 +35,15 @@ namespace DTHApplication.Client.Services.ProductServices
             throw new NotImplementedException();
         }
 
-        public Task UpdateAsync(User user)
+        public async Task UpdateAsync(User user)
         {
-            throw new NotImplementedException();
+            var result = await _http.PostAsJsonAsync("api/user/update", user);
+            var json = await result.Content.ReadFromJsonAsync<GenericResponse>();
+            if(json != null && json.IsSuccess == true) {
+                await GetAllAsync();
+            } else {
+                ResponseMessage = json.Message;
+            }
         }
     }
 }

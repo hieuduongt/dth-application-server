@@ -2,11 +2,11 @@
 @inject IUserServices userServices
 <h3>User List</h3>
 
-@if (userServices.Users.Results == null || userServices.Users.Results.Count == 0)
+@if (Loading)
 {
     <p><em>Loading...</em></p>
 }
-else
+else if(userServices.ResponseMessage == "" && (userServices.Users.Results != null || userServices.Users.Results.Count != 0))
 {
     <div class="table-responsive">
         <table class="table table-striped mt-4">
@@ -40,26 +40,54 @@ else
                         <td class="align-middle">@user.LoginName</td>
                         <td class="align-middle">@user.Email</td>
                         <td class="align-middle">@user.Gender</td>
-                        <td class="align-middle">@user.Role</td>
-                        <td class="align-middle">@user.AccountStatus</td>
+                        <td class="align-middle">
+                            <select @bind="@user.Role" class="form-select" aria-label="Default select example">
+                                <option selected value="@user.Role">@user.Role</option>
+                                @foreach (Role role in (Role[]) Enum.GetValues(typeof(Role)))
+                                {
+                                    <option value="@role">@role</option>
+                                }
+                            </select>
+                        </td>
+                        <td class="align-middle">
+                            <select @bind="@user.AccountStatus" class="form-select" aria-label="Default select example">
+                                <option selected value="@user.AccountStatus">@user.AccountStatus</option>
+                                @foreach (AccountStatus status in (AccountStatus[]) Enum.GetValues(typeof(AccountStatus)))
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            </select>
+                        </td>
                         <td class="align-middle">@user.PhoneNumber</td>
                         <td class="align-middle">@user.Address</td>
                         <td class="align-middle">@user.DateOfBirth</td>
                         <td class="align-middle">@user.CreatedDate</td>
                         <td class="align-middle">@user.UpdatedDate</td>
                         <td class="align-middle">
-                            <a class="btn btn-primary" href="user/get/@user.Id" role="button">Detail</a>
+                            <button class="btn btn-primary" @onclick="@(() => HandleSave(user))">Save</button>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
+} else {
+    <div class="text-danger">
+        @userServices.ResponseMessage
+    </div>
 }
 
 @code {
+    private string Message {get; set;} = string.Empty;
+    private bool Loading {get; set;} = false;
     protected override async Task OnInitializedAsync()
     {
+        Loading = true;
         await userServices.GetAllAsync();
+        Loading = false;
+    }
+
+    private void HandleSave(User user) {
+        userServices.UpdateAsync(user);
     }
 }

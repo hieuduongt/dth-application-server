@@ -5,7 +5,7 @@ namespace DTHApplication.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "AdminPolicy")]
     public class ProductController : ControllerBase
     {
         private readonly IProductServices _services;

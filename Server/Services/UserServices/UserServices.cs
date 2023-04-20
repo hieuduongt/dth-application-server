@@ -67,9 +67,15 @@ namespace DTHApplication.Server.Services.UserServices
             };
         }
 
-        public async Task<GenericResponse> UpdateAsync(User user)
+        public async Task<GenericResponse> UpdateAsync(UserUpdate user)
         {
-            _dbContext.Users.Update(user);
+            var currentUser = await _dbContext.Users.FindAsync(user.Id);
+            currentUser.AccountStatus = user.AccountStatus;
+            currentUser.Address = user.Address;
+            currentUser.UpdatedDate = DateTime.Now;
+            currentUser.DateOfBirth = user.DateOfBirth;
+            currentUser.Role = user.Role;
+            _dbContext.Users.Update(currentUser);
             try
             {
                 await _dbContext.SaveChangesAsync();
