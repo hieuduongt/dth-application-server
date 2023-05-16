@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DTHApplication.Server.Controllers
 {
@@ -34,6 +35,7 @@ namespace DTHApplication.Server.Controllers
             return Ok(results);
         }
 
+        [Authorize(Policy = "SellerPolicy")]
         [HttpPost]
         public async Task<ActionResult<GenericResponse>> Create(Product product)
         {
@@ -41,6 +43,7 @@ namespace DTHApplication.Server.Controllers
             return Ok(results);
         }
 
+        [Authorize(Policy = "SellerPolicy")]
         [HttpPut]
         public async Task<ActionResult<GenericResponse>> Update(Product product)
         {
@@ -48,6 +51,7 @@ namespace DTHApplication.Server.Controllers
             return Ok(results);
         }
 
+        [Authorize(Policy = "SellerPolicy")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<GenericResponse>> Delete(Guid id)
         {

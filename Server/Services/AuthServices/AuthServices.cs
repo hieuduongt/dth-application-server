@@ -2,7 +2,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace DTHApplication.Server.Services.AuthServices
 {
@@ -21,7 +20,7 @@ namespace DTHApplication.Server.Services.AuthServices
             if (await UserExist(user.UserName, user.UserName))
             {
                 var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.LoginName.ToLower() == user.UserName.ToLower() || u.Email.ToLower() == user.UserName.ToLower());
-                if(VerifyPasswordHash(user.Password, currentUser.PasswordHash, currentUser.PasswordSalt))
+                if (VerifyPasswordHash(user.Password, currentUser.PasswordHash, currentUser.PasswordSalt))
                 {
                     return new GenericResponse<string>
                     {
@@ -30,7 +29,8 @@ namespace DTHApplication.Server.Services.AuthServices
                         Message = "Login successfully!",
                         Result = CreateUserToken(currentUser)
                     };
-                } else
+                }
+                else
                 {
                     return new GenericResponse<string>
                     {
@@ -40,7 +40,8 @@ namespace DTHApplication.Server.Services.AuthServices
                         Result = null
                     };
                 }
-            } else
+            }
+            else
             {
                 return new GenericResponse<string>
                 {
@@ -54,10 +55,11 @@ namespace DTHApplication.Server.Services.AuthServices
 
         public async Task<GenericResponse> Register(UserRegister user)
         {
-            if(await UserExist(user.LoginName, user.Email))
+            if (await UserExist(user.LoginName, user.Email))
             {
                 return GenericResponse.Failed("User already exists!");
-            } else
+            }
+            else
             {
                 CreatePasswordHash(user.Password, out byte[] passwordHash, out byte[] passwordSalt);
                 var newUser = new User
@@ -83,7 +85,8 @@ namespace DTHApplication.Server.Services.AuthServices
                 {
                     await _dbContext.SaveChangesAsync();
                     return GenericResponse.Success("Registered the new account!");
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     return GenericResponse.Failed($"Error when registering new account: {ex.Message}");
                 }
@@ -92,7 +95,7 @@ namespace DTHApplication.Server.Services.AuthServices
 
         public async Task<bool> UserExist(string loginName, string email)
         {
-            if(
+            if (
                 await _dbContext.Users.AnyAsync(u => u.LoginName.ToLower().Equals(loginName.ToLower()))
                 ||
                 await _dbContext.Users.AnyAsync(u => u.Email.ToLower().Equals(email.ToLower()))
@@ -156,7 +159,8 @@ namespace DTHApplication.Server.Services.AuthServices
                 _dbContext.Users.Update(currentUser);
                 await _dbContext.SaveChangesAsync();
                 return GenericResponse.Success("Changed your password");
-            } else
+            }
+            else
             {
                 return GenericResponse.Failed("Your old password did not match");
             }

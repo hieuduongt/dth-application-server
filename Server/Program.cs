@@ -79,7 +79,10 @@ builder.Services.AddAuthentication(x =>
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value)),
             ValidateIssuer = false,
-            ValidateAudience = false
+            ValidateAudience = false,
+            RequireExpirationTime = true,
+            RequireSignedTokens = true,
+            ValidateLifetime = true
         };
         options.Events = new JwtBearerEvents()
         {
@@ -113,6 +116,20 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("ManagerPolicy", (policy) =>
     {
         policy.RequireRole(Role.Manager.ToString());
+        policy.RequireRole(Role.Admin.ToString());
+    });
+    options.AddPolicy("UserPolicy", (policy) =>
+    {
+        policy.RequireRole(Role.User.ToString());
+        policy.RequireRole(Role.Admin.ToString());
+        policy.RequireRole(Role.Manager.ToString());
+        policy.RequireRole(Role.Seller.ToString());
+    });
+    options.AddPolicy("SellerPolicy", (policy) =>
+    {
+        policy.RequireRole(Role.Admin.ToString());
+        policy.RequireRole(Role.Seller.ToString());
+        policy.RequireRole(Role.Manager.ToString());
     });
 });
 
@@ -136,7 +153,11 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseCors(options => options.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin());
+app.UseCors(options =>
+    options.WithOrigins("http://localhost:3000")
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowAnyOrigin());
 app.UseSwagger();
 app.UseHttpsRedirection();
 
